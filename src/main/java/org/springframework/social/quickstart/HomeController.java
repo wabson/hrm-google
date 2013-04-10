@@ -19,13 +19,13 @@ import static org.springframework.util.StringUtils.hasText;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.social.ExpiredAuthorizationException;
 import org.springframework.social.google.api.Google;
+import org.springframework.social.google.api.drive.DriveFile;
 import org.springframework.social.google.api.drive.DriveFileQueryBuilder;
 import org.springframework.social.google.api.drive.DriveFilesPage;
 import org.springframework.social.google.api.drive.DriveOperations;
@@ -33,7 +33,9 @@ import org.springframework.social.google.api.userinfo.GoogleUserProfile;
 import org.springframework.social.quickstart.drive.DateOperators;
 import org.springframework.social.quickstart.drive.DriveSearchForm;
 import org.springframework.social.quickstart.drive.OptionalBoolean;
+import org.springframework.social.quickstart.drive.WorksheetForm;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -105,6 +107,48 @@ public class HomeController {
 			.addObject("files", files)
             .addObject("profile", profile);
 	}
+	
+	@RequestMapping(value="workbook", method=GET)
+	public ModelAndView task() {
+		
+		return new ModelAndView("worksheet", "command", new WorksheetForm());
+	}
+	
+	@RequestMapping(value="workbook", method=GET, params="id")
+	public ModelAndView task(String id) {
+		
+		DriveFile file = google.driveOperations().getFile(id);
+		WorksheetForm command = new WorksheetForm(file.getId(), file.getTitle());
+		return new ModelAndView("task", "command", command);
+	}
+	
+	@RequestMapping(value="workbook", method=POST)
+	public ModelAndView saveWorksheet(WorksheetForm command, BindingResult result) {
+		
+		if(result.hasErrors()) {
+			return new ModelAndView("worksheet", "command", command);
+		}
+
+		DriveFile file = new DriveFile();
+		google.driveOperations().createFileMetadata(file);
+		
+		return new ModelAndView("redirect:/", "list", command.getList());
+	}
+	
+	/*
+	@RequestMapping(value="workbook", method=POST, params="parent")
+	public ModelAndView createTask(String parent, String previous, WorksheetForm command, BindingResult result) {
+		
+		if(result.hasErrors()) {
+			return new ModelAndView("worksheet", "command", command);
+		}
+
+		Task task = new Task(command.getId(), command.getTitle(), command.getNotes(), command.getDue(), command.getCompleted());
+		google.taskOperations().createTaskAt(command.getList(), parent, previous, task);
+		
+		return new ModelAndView("redirect:/tasks", "list", command.getList());
+	}
+	*/
 	
 	@RequestMapping(value="starfile", method=POST)
 	@ResponseBody
