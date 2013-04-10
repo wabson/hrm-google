@@ -8,7 +8,7 @@
 	</jsp:text>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
-<title>Spring Social Google - Contacts</title>
+<title>HRM Google - Sign In</title>
 <jsp:directive.include file="header.jspf" />
 </head>
 
@@ -16,8 +16,8 @@
 	<div class="container">
 		<div class="row">
 			<div class="span14 columns offset2">
-				<h1>Spring Social Google Example Application</h1>
-				<h5>Sources: <a href="https://github.com/GabiAxel/spring-social-google/">https://github.com/GabiAxel/spring-social-google/</a></h5>
+				<h1>HRM Google</h1>
+				<h5>Create and manage Hasler Race Management compatible files online</h5>
 				<form action="signin/google" method="POST">
 				    <button type="submit" class="btn btn-large btn-primary">Sign in with Google</button>
 				    <input type="hidden" name="scope" value="https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo#email https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/tasks https://www-opensocial.googleusercontent.com/api/people https://www.googleapis.com/auth/drive" />		    

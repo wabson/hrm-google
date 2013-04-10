@@ -5,13 +5,10 @@
 <div class="navbar navbar-fixed-top">
 	<div class="navbar-inner">
 		<div class="container">
-			<a href="./" class="brand">Spring Social Google</a>
+			<a href="./" class="brand">HRM Google</a>
 	
 			<ul class="nav">
-				<li class="${selected == 'profile' ? 'active' : ''}"><a href="./">Profile</a></li>
-				<li class="${selected == 'plus' ? 'active' : ''}"><a href="people">Google+</a></li>
-				<li class="${selected == 'tasks' ? 'active' : ''}"><a href="tasklists">Tasks</a></li>
-				<li class="${selected == 'drive' ? 'active' : ''}"><a href="drivefiles">Drive</a></li>
+				<li class="${selected == 'drive' ? 'active' : ''}"><a href="./">My Files</a></li>
 			</ul>
 			
 			<ul class="nav pull-right">

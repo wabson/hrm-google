@@ -9,7 +9,7 @@
 	</jsp:text>
 	<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
-<title>Spring Social Google - Drive Files</title>
+<title>HRM Google - My Files</title>
 <jsp:directive.include file="header.jspf" />
 <link href="resources/css/silk-sprite.css" rel="stylesheet"/>
 <script src="resources/js/bootbox.min.js"><![CDATA[<!-- -->]]></script>
@@ -24,107 +24,16 @@
 	
 		<div class="content">
 
-			<h1>Drive</h1>
+			<h1>My Files</h1>
 			
-			<!-- <p>
-				<a href="tasklist" class="btn success leftMargin">New Task List</a>
-			</p> -->
+			<p class="pull-right">
+				<a href="workbook" class="btn success leftMargin">New HRM Workbook</a>
+			</p>
 			
 			<form:form method="get" cssClass="form-horizontal">
 				<form:hidden path="parentId" />
-				<div class="control-group">
-					<div class="controls">
-						<label class="checkbox">
-							<form:checkbox path="negate"/> Negate query
-						</label>
-					</div>
-				</div>
-				<div class="control-group">
-					<label for="titleIs" class="control-label">Title is</label>
-					<div class="controls">
-						<form:input path="titleIs" cssClass="input-xxlarge"/>
-					</div>
-				</div>
-				<div class="control-group">
-					<label for="titleContains" class="control-label">Title contains</label>
-					<div class="controls">
-						<form:input path="titleContains" cssClass="input-xxlarge"/>
-					</div>
-				</div>
-				<div class="control-group">
-					<label for="fullTextContains" class="control-label">Full text contains</label>
-					<div class="controls">
-						<form:input path="fullTextContains" cssClass="input-xxlarge"/>
-					</div>
-				</div>
-				<div class="control-group">
-					<label for="mimeTypeIs" class="control-label">Mime type is</label>
-					<div class="controls">
-						<form:input path="mimeTypeIs" cssClass="input-xxlarge"/>
-					</div>
-				</div>
-				<div class="control-group">
-					<label for="modifiedOperator" class="control-label">Modified</label>
-					<div class="controls">
-						<form:select path="modifiedOperator" items="${dateOperators}" cssClass="input-medium"></form:select>
-						<form:input path="modifiedValue" cssClass="input-small dateInput"/>
-					</div>
-				</div>
-				<div class="control-group">
-					<label for="modifiedOperator" class="control-label">Last viewed by me</label>
-					<div class="controls">
-						<form:select path="lastViewedOperator" items="${dateOperators}" cssClass="input-medium"></form:select>
-						<form:input path="lastViewedValue" cssClass="input-small dateInput"/>
-					</div>
-				</div>
-				<div class="control-group">
-					<label for="trashed" class="control-label">Trashed</label>
-					<div class="controls">
-						<form:select path="trashed" items="${booleanOperators}" cssClass="input-small"></form:select>
-					</div>
-				</div>
-				<div class="control-group">
-					<label for="starred" class="control-label">Starred</label>
-					<div class="controls">
-						<form:select path="starred" items="${booleanOperators}" cssClass="input-small"></form:select>
-					</div>
-				</div>
-				<div class="control-group">
-					<label for="hidden" class="control-label">Hidden</label>
-					<div class="controls">
-						<form:select path="hidden" items="${booleanOperators}" cssClass="input-small"></form:select>
-					</div>
-				</div>
-				<div class="control-group">
-					<label for="owner" class="control-label">Owner</label>
-					<div class="controls">
-						<form:input path="owner" cssClass="input-xxlarge"/>
-					</div>
-				</div>
-				<div class="control-group">
-					<label for="writer" class="control-label">Writer</label>
-					<div class="controls">
-						<form:input path="writer" cssClass="input-xxlarge"/>
-					</div>
-				</div>
-				<div class="control-group">
-					<label for="reader" class="control-label">Reader</label>
-					<div class="controls">
-						<form:input path="reader" cssClass="input-xxlarge"/>
-					</div>
-				</div>
-				<div class="control-group">
-					<div class="controls">
-						<label class="checkbox">
-							<form:checkbox path="sharedWithMe"/> Shared with me
-						</label>
-					</div>
-				</div>
-				<div class="control-group">
-					<div class="controls">
-						<input type="submit" class="btn" value="Search"/>
-					</div>
-				</div>
+				<form:input path="titleContains" cssClass="input-large"/><![CDATA[&nbsp;]]>
+				<input type="submit" class="btn" value="Search"/>
 			</form:form>
 			
 			<c:if test="${not empty param.parentId and param.parentId ne 'root'}">
@@ -136,6 +45,7 @@
 					<thead>
 						<th></th>
 						<th colspan="2">File Name</th>
+						<th></th>
 						<th></th>
 						<th></th>
 						<th></th>
@@ -157,13 +67,12 @@
 										<a href="?parentId=${file.id}">${file.title}</a>
 									</c:if>
 									<c:if test="${not file.folder}">
-										${file.title}
+										<a href="https://docs.google.com/spreadsheet/ccc?key=${file.id}" target="_blank">${file.title}</a>
 									</c:if>
 								</td>
-								<td>
-									<a href="javascript:void(0)" class="trash ui-silk ui-silk-${file.trashed ? 'arrow-turn-left' : 'bin'}" title="${file.trashed ? 'Untrash' : 'Trash'}"><![CDATA[<!-- -->]]></a>
-								</td>
-								<td><a href="javascript:void(0)" class="delete ui-silk ui-silk-cross" title="Delete"><![CDATA[<!-- -->]]></a></td>
+								<td><a href="javascript:void(0)" class="export ui-silk ui-silk-page-white-copy" title="Copy"><![CDATA[<!-- -->]]></a></td>
+								<td><a href="javascript:void(0)" class="export ui-silk ui-silk-page-white-put" title="Download HRM"><![CDATA[<!-- -->]]></a></td>
+								<td><a href="javascript:void(0)" class="trash ui-silk ui-silk-delete" title="Trash"><![CDATA[<!-- -->]]></a></td>
 							</tr>
 						</c:forEach>
 					</tbody>
