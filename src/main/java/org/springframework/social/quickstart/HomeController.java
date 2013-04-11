@@ -129,8 +129,8 @@ public class HomeController {
 			return new ModelAndView("worksheet", "command", command);
 		}
 
-		DriveFile file = new DriveFile();
-		google.driveOperations().createFileMetadata(file);
+		DriveFile file = google.driveOperations().copy("0AsA0SXNo_BkZdGxiTlhsQ08zcUxpTW5VaUt2N0F0MlE");
+		google.driveOperations().updateFileMetadata(file.getId(), command.getTitle(), file.getMimeType(), file.getDescription());
 		
 		return new ModelAndView("redirect:/", "list", command.getList());
 	}
