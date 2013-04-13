@@ -20,7 +20,7 @@
 				<h5>Create and manage Hasler Race Management compatible files online</h5>
 				<form action="signin/google" method="POST">
 				    <button type="submit" class="btn btn-large btn-primary">Sign in with Google</button>
-				    <input type="hidden" name="scope" value="https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo#email https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/tasks https://www-opensocial.googleusercontent.com/api/people https://www.googleapis.com/auth/drive" />		    
+				    <input type="hidden" name="scope" value="https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo#email https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/tasks https://www-opensocial.googleusercontent.com/api/people https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.appdata" />		    
 				</form>
 			</div>
 		</div>
