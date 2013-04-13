@@ -70,22 +70,11 @@ public class HomeController {
 				.fromPage(command.getPageToken());
 		
 		queryBuilder.trashed(false);
-		//queryBuilder.mimeTypeIs("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 		queryBuilder.mimeTypeIs("application/vnd.google-apps.spreadsheet");
-		
-		if(hasText(command.getTitleIs())) {
-			queryBuilder.titleIs(command.getTitleIs());
-		}
+		//queryBuilder.parentIs("appdata");
 		
 		if(hasText(command.getTitleContains())) {
 			queryBuilder.titleContains(command.getTitleContains());
-		}
-		
-		if(hasText(command.getParentId())) {
-			queryBuilder.parentIs(command.getParentId());
-		} else {
-			queryBuilder.parentIs("root");
-			//queryBuilder.parentIs("appdata");
 		}
 		
 		DriveFilesPage files = queryBuilder.getPage();
@@ -129,8 +118,8 @@ public class HomeController {
 			return new ModelAndView("worksheet", "command", command);
 		}
 
-		DriveFile file = google.driveOperations().copy("0AsA0SXNo_BkZdGxiTlhsQ08zcUxpTW5VaUt2N0F0MlE");
-		google.driveOperations().updateFileMetadata(file.getId(), command.getTitle(), file.getMimeType(), file.getDescription());
+		String[] parents = { "root" };
+		google.driveOperations().copy("0AsA0SXNo_BkZdGxiTlhsQ08zcUxpTW5VaUt2N0F0MlE", parents, command.getTitle());
 		
 		return new ModelAndView("redirect:/", "list", command.getList());
 	}
