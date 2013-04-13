@@ -68,10 +68,7 @@ $(function() {
 		var trashed = nameCell.hasClass('trashed');
 		var fileId = row.attr('file-id');
 		$.post('trashfile', {fileId: fileId, trash: !trashed}, function() {
-			nameCell.toggleClass('trashed');
-			trashIcon.toggleClass('ui-silk-bin');
-			trashIcon.toggleClass('ui-silk-arrow-turn-left');
-			trashIcon.attr('title', trashed ? 'Trash' : 'Untrash');
+			row.remove();
 		});
 	});
 	
