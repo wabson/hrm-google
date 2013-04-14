@@ -70,7 +70,7 @@
 										<a href="https://docs.google.com/spreadsheet/ccc?key=${file.id}" target="_blank">${file.title}</a>
 									</c:if>
 								</td>
-								<td><a href="javascript:void(0)" class="export ui-silk ui-silk-page-white-copy" title="Copy"><![CDATA[<!-- -->]]></a></td>
+								<td><a href="javascript:void(0)" class="copy ui-silk ui-silk-page-white-copy" title="Copy"><![CDATA[<!-- -->]]></a></td>
 								<td><a href="javascript:void(0)" class="export ui-silk ui-silk-page-white-put" title="Download HRM"><![CDATA[<!-- -->]]></a></td>
 								<td><a href="javascript:void(0)" class="trash ui-silk ui-silk-delete" title="Trash"><![CDATA[<!-- -->]]></a></td>
 							</tr>

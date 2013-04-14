@@ -19,9 +19,18 @@ import static org.springframework.util.StringUtils.hasText;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.social.ExpiredAuthorizationException;
 import org.springframework.social.google.api.Google;
@@ -165,5 +174,17 @@ public class HomeController {
 	@ResponseBody
 	public void deleteFile(String fileId) {
 		google.driveOperations().delete(fileId);
+	}
+	
+	@RequestMapping(value="copyfile", method=POST, produces="application/json")
+	public void copyFile(String fileId, String parentId, String newName, HttpServletResponse response) throws JsonGenerationException, JsonMappingException, IOException {
+		Writer writer = response.getWriter();
+		DriveFile file = google.driveOperations().copy(fileId, new String[]{parentId}, newName);
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode rootNode = mapper.createObjectNode(); // will be of type ObjectNode
+		((ObjectNode) rootNode).put("id", file.getId());
+		((ObjectNode) rootNode).put("title", file.getTitle());
+		response.setContentType("application/json");
+		mapper.writeValue(writer, rootNode);
 	}
 }

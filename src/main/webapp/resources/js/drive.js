@@ -72,6 +72,21 @@ $(function() {
 		});
 	});
 	
+	$('.copy').click(function(e) {
+		var row = $(e.target).parents('tr'),
+			fileId = row.attr('file-id'),
+			fileName = row.attr('file-name');
+		$.post('copyfile', {fileId: fileId, parentId: "root", newName: "Copy of " + fileName}, function(data) {
+			var newRow = row.clone(true).prependTo("tbody"); // Insert the new row at the top
+			newRow.attr("file-id", data.id);
+			newRow.attr("file-name", data.title);
+			newRow.find("a.star").addClass("gray"); // In case the source was starred, will have no effect otherwise
+			newRow.find("td.name-cell a")
+				.attr('href', "https://docs.google.com/spreadsheet/ccc?key=" + data.id)
+				.html(data.title);
+		});
+	});
+	
 	$('.delete').click(function(e) {
 		var row = $(e.target).parents('tr');
 		var fileId = row.attr('file-id');
