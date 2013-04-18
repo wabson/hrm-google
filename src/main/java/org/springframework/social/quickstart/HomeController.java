@@ -20,12 +20,19 @@ import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -186,5 +193,45 @@ public class HomeController {
 		((ObjectNode) rootNode).put("title", file.getTitle());
 		response.setContentType("application/json");
 		mapper.writeValue(writer, rootNode);
+	}
+	
+	@RequestMapping(value="downloadfile/*", method=GET, params="fileId")
+	public void downloadFile(String fileId, HttpServletResponse response) throws Exception {
+		DriveFile file = google.driveOperations().getFile(fileId);
+		if (file == null) {
+			throw new Exception("File not found");
+		}
+		OutputStream outputStream = response.getOutputStream();
+		String exportUri = file.getExportLinks().get("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		if (exportUri != null) {
+			HttpClient client = new DefaultHttpClient();
+			HttpGet httpget = new HttpGet(exportUri);
+			httpget.setHeader("Authorization", "Bearer " + google.getAccessToken());
+			HttpResponse resp = client.execute(httpget);
+			HttpEntity entity = resp.getEntity();
+			if (entity != null) {
+				// Use setHeader as setContentType adds on a text encoding, which confuses Chome
+				response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+				//response.setCharacterEncoding("binary");
+				response.setHeader("Content-Disposition","attachment;filename=" + file.getTitle() + ".xlsx");
+				InputStream instream = entity.getContent();
+				//response.setContentLength((int) entity.getContentLength());
+				response.setHeader("Content-Length", "" + entity.getContentLength());
+				try {
+					byte[] buffer = new byte[1024]; // Adjust if you want
+					int bytesRead;
+					while ((bytesRead = instream.read(buffer)) != -1)
+					{
+						outputStream.write(buffer, 0, bytesRead);
+					}
+				} finally {
+					instream.close();
+				}
+			} else {
+				throw new Exception("Response entity is null!");
+			}
+		} else {
+			throw new Exception("No Excel export found!");
+		}
 	}
 }
