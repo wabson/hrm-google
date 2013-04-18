@@ -15,9 +15,9 @@
  */
 package org.springframework.social.quickstart.config;
 
+import javax.inject.Inject;
 import javax.sql.DataSource;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
@@ -46,10 +46,10 @@ import org.springframework.social.quickstart.user.User;
 @Configuration
 public class SocialConfig {
 
-	@Autowired
+	@Inject
 	private Environment environment;
 
-	@Autowired
+	@Inject
 	private DataSource dataSource;
 
 	/**
