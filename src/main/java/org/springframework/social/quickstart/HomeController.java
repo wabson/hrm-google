@@ -19,6 +19,9 @@ import static org.springframework.util.StringUtils.hasText;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -33,11 +36,15 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.poi.POIXMLProperties;
+import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ObjectNode;
+import org.openxmlformats.schemas.officeDocument.x2006.customProperties.CTProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.social.ExpiredAuthorizationException;
 import org.springframework.social.google.api.Google;
@@ -201,31 +208,75 @@ public class HomeController {
 		if (file == null) {
 			throw new Exception("File not found");
 		}
-		OutputStream outputStream = response.getOutputStream();
 		String exportUri = file.getExportLinks().get("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 		if (exportUri != null) {
+
+			// Download XLSX file from Google
+
 			HttpClient client = new DefaultHttpClient();
 			HttpGet httpget = new HttpGet(exportUri);
 			httpget.setHeader("Authorization", "Bearer " + google.getAccessToken());
 			HttpResponse resp = client.execute(httpget);
 			HttpEntity entity = resp.getEntity();
 			if (entity != null) {
-				// Use setHeader as setContentType adds on a text encoding, which confuses Chome
-				response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-				//response.setCharacterEncoding("binary");
-				response.setHeader("Content-Disposition","attachment;filename=" + file.getTitle() + ".xlsx");
 				InputStream instream = entity.getContent();
-				//response.setContentLength((int) entity.getContentLength());
-				response.setHeader("Content-Length", "" + entity.getContentLength());
+				final File temp = File.createTempFile("hrmdownload-", ".xlsx");
+				OutputStream tos = new FileOutputStream(temp);
 				try {
 					byte[] buffer = new byte[1024]; // Adjust if you want
 					int bytesRead;
 					while ((bytesRead = instream.read(buffer)) != -1)
 					{
-						outputStream.write(buffer, 0, bytesRead);
+						tos.write(buffer, 0, bytesRead);
 					}
 				} finally {
 					instream.close();
+				}
+				tos.close();
+
+				// Write properties using POI
+
+				OPCPackage pkg = OPCPackage.open(temp);
+				XSSFWorkbook wb = new XSSFWorkbook(pkg);
+				POIXMLProperties props = wb.getProperties();
+				POIXMLProperties.CustomProperties cust =  props.getCustomProperties();
+
+				CTProperty hrmProperty = cust.getUnderlyingProperties().addNewProperty();
+				hrmProperty.setBool(true);
+				hrmProperty.setName("HRM");
+				hrmProperty.setFmtid("{D5CDD505-2E9C-101B-9397-08002B2CF9AE}");
+				hrmProperty.setPid(2);
+				
+				CTProperty versionProperty = cust.getUnderlyingProperties().addNewProperty();
+				versionProperty.setName("Version");
+				versionProperty.setR8(8.2);
+				versionProperty.setFmtid("{D5CDD505-2E9C-101B-9397-08002B2CF9AE}");
+				versionProperty.setPid(3);
+
+				final File exportFile = File.createTempFile("hrmexport-", ".xlsx");
+				OutputStream eos = new FileOutputStream(exportFile);
+				wb.write(eos);
+				eos.close();
+
+				// Serve up the file
+
+				InputStream eis = new FileInputStream(exportFile);
+				// Use setHeader as setContentType adds on a text encoding, which confuses Chome
+				response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+				//response.setCharacterEncoding("binary");
+				response.setHeader("Content-Disposition","attachment;filename=" + file.getTitle() + ".xlsx");
+				//response.setContentLength((int) entity.getContentLength());
+				response.setHeader("Content-Length", "" + exportFile.length());
+				OutputStream outputStream = response.getOutputStream();
+				try {
+					byte[] buffer = new byte[1024]; // Adjust if you want
+					int bytesRead;
+					while ((bytesRead = eis.read(buffer)) != -1)
+					{
+						outputStream.write(buffer, 0, bytesRead);
+					}
+				} finally {
+					eis.close();
 				}
 			} else {
 				throw new Exception("Response entity is null!");
