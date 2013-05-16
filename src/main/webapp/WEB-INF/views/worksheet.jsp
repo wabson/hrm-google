@@ -33,6 +33,14 @@
 						<div class="input">
 							<form:input path="title" cssClass="xlarge" />
 						</div>
+						<label for="title">Type</label>
+						<div class="input">
+							<form:select path="type" cssClass="xlarge">
+								<form:option value="hrm">Hasler Race</form:option>
+								<form:option value="arm">Assessment Race</form:option>
+								<form:option value="nrm">Nationals Race</form:option>
+							</form:select>
+						</div>
 					</div>
 					<div class="actions">
 						<input type="submit" class="btn btn-primary" value="Save" />

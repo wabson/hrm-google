@@ -142,7 +142,16 @@ public class HomeController {
 		}
 
 		String[] parents = { "root" };
-		google.driveOperations().copy("0AsA0SXNo_BkZdGxiTlhsQ08zcUxpTW5VaUt2N0F0MlE", parents, command.getTitle());
+		String srcId = null;
+		if (command.getType().equals("hrm")) {
+			srcId = "0AsA0SXNo_BkZdGxiTlhsQ08zcUxpTW5VaUt2N0F0MlE";
+		} else if (command.getType().equals("arm")) {
+			srcId = "0AsA0SXNo_BkZdC1hdUhfeDdBVWppdVBESHZyaThiMkE";
+		} else if (command.getType().equals("nrm")) {
+			srcId = "0AsA0SXNo_BkZdEd3N1ZsdzlkbnFyRFkzNm45YTJkbFE";
+		}
+		google.driveOperations().copy(srcId, parents, command.getTitle());
+		// TODO Record HRM version in a custom property
 		
 		return new ModelAndView("redirect:/", "list", command.getList());
 	}

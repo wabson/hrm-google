@@ -18,6 +18,8 @@ public class WorksheetForm {
 	
 	private String notes;
 	
+	private String type;
+	
 	@DateTimeFormat(iso=DATE)
 	private Date due;
 	
@@ -79,6 +81,14 @@ public class WorksheetForm {
 
 	public void setCompleted(Date completed) {
 		this.completed = completed;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 	
 }
