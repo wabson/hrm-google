@@ -262,7 +262,7 @@ public class HomeController {
 				
 				CTProperty versionProperty = cust.getUnderlyingProperties().addNewProperty();
 				versionProperty.setName("Version");
-				versionProperty.setR8(9.0);
+				versionProperty.setR8(10.1);
 				versionProperty.setFmtid("{D5CDD505-2E9C-101B-9397-08002B2CF9AE}");
 				versionProperty.setPid(3);
 
