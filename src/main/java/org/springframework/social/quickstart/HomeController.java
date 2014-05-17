@@ -52,6 +52,7 @@ import org.springframework.social.google.api.drive.DriveFile;
 import org.springframework.social.google.api.drive.DriveFileQueryBuilder;
 import org.springframework.social.google.api.drive.DriveFilesPage;
 import org.springframework.social.google.api.drive.DriveOperations;
+import org.springframework.social.google.api.drive.FileProperty;
 import org.springframework.social.google.api.userinfo.GoogleUserProfile;
 import org.springframework.social.quickstart.drive.DateOperators;
 import org.springframework.social.quickstart.drive.DriveSearchForm;
@@ -143,16 +144,19 @@ public class HomeController {
 
 		String[] parents = { "root" };
 		String srcId = null;
-		if (command.getType().equals("hrm")) {
+		String raceType = command.getType();
+		if (raceType.equals("hrm")) {
 			srcId = "0AsA0SXNo_BkZdGxiTlhsQ08zcUxpTW5VaUt2N0F0MlE";
-		} else if (command.getType().equals("arm")) {
+		} else if (raceType.equals("arm")) {
 			srcId = "0AsA0SXNo_BkZdC1hdUhfeDdBVWppdVBESHZyaThiMkE";
-		} else if (command.getType().equals("nrm")) {
+		} else if (raceType.equals("nrm")) {
 			srcId = "0AsA0SXNo_BkZdEd3N1ZsdzlkbnFyRFkzNm45YTJkbFE";
 		}
-		google.driveOperations().copy(srcId, parents, command.getTitle());
-		// TODO Record HRM version in a custom property
-		
+		DriveOperations driveOperations = google.driveOperations();
+		DriveFile file = driveOperations.copy(srcId, parents, command.getTitle());
+		// Record HRM type in a custom property
+		FileProperty fp = new FileProperty("hrmType", raceType);
+		driveOperations.addProperty(file.getId(), fp);
 		return new ModelAndView("redirect:/", "list", command.getList());
 	}
 	
