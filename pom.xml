@@ -175,6 +175,14 @@
 			<name>Spring Social Google</name>
 			<url>https://github.com/GabiAxel/maven/raw/master/</url>
 		</repository>
+                <repository>
+                    <id>spring-social-google-wabson</id>
+                    <url>https://raw.github.com/wabson/spring-social-google/mvn-repo/</url>
+                    <snapshots>
+                        <enabled>true</enabled>
+                        <updatePolicy>always</updatePolicy>
+                    </snapshots>
+                </repository>
 	</repositories>
 	
 	<build>
