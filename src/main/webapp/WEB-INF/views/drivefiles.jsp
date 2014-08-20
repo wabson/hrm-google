@@ -78,7 +78,7 @@
 					</tbody>
 				</table>
 				<c:if test="${not empty files.nextPageToken}">
-					<p class="pull-right"><a href="drivefiles?text=${param.text}&amp;pageToken=${files.nextPageToken}"><![CDATA[Next Page &rarr;]]></a></p>
+					<p class="pull-right"><a href="?text=${param.text}&amp;pageToken=${files.nextPageToken}"><![CDATA[Next Page &rarr;]]></a></p>
 				</c:if>
 			</c:if>
 			<c:if test="${empty files.items}">

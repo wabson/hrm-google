@@ -92,7 +92,8 @@ public class HomeController {
 
 		DriveFileQueryBuilder queryBuilder = google.driveOperations().driveFileQuery()
 				.fromPage(command.getPageToken());
-		
+
+		queryBuilder.maxResultsNumber(10);
 		queryBuilder.trashed(false);
 		queryBuilder.mimeTypeIs("application/vnd.google-apps.spreadsheet");
 		//queryBuilder.parentIs("appdata");
