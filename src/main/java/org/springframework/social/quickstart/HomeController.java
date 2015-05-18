@@ -69,6 +69,8 @@ import org.springframework.web.servlet.ModelAndView;
 public class HomeController {
 
 	private final Google google;
+
+	private static final double HRM_VERSION = 10.1;
 	
 	@Autowired
 	public HomeController(Google google) {
@@ -249,6 +251,8 @@ public class HomeController {
 				tos.close();
 
 				// Write properties using POI
+				String fileType = "hrm";
+				double hrmVersion = HRM_VERSION;
 
 				OPCPackage pkg = OPCPackage.open(temp);
 				XSSFWorkbook wb = new XSSFWorkbook(pkg);
@@ -257,13 +261,13 @@ public class HomeController {
 
 				CTProperty hrmProperty = cust.getUnderlyingProperties().addNewProperty();
 				hrmProperty.setBool(true);
-				hrmProperty.setName("HRM");
+				hrmProperty.setName(fileType.toUpperCase());
 				hrmProperty.setFmtid("{D5CDD505-2E9C-101B-9397-08002B2CF9AE}");
 				hrmProperty.setPid(2);
 				
 				CTProperty versionProperty = cust.getUnderlyingProperties().addNewProperty();
 				versionProperty.setName("Version");
-				versionProperty.setR8(10.1);
+				versionProperty.setR8(hrmVersion);
 				versionProperty.setFmtid("{D5CDD505-2E9C-101B-9397-08002B2CF9AE}");
 				versionProperty.setPid(3);
 
