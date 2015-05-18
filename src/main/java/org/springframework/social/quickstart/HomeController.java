@@ -70,7 +70,9 @@ public class HomeController {
 
 	private final Google google;
 
-	private static final double HRM_VERSION = 10.1;
+	private static final int FORMULA_REMOVAL_START_COL = 11;
+	private static final int FORMULA_REMOVAL_END_COL = 15;
+	private static final double HRM_VERSION = 11.0;
 	
 	@Autowired
 	public HomeController(Google google) {
