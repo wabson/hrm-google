@@ -38,6 +38,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.poi.POIXMLProperties;
 import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.codehaus.jackson.JsonGenerationException;
@@ -291,6 +293,20 @@ public class HomeController {
 						}
 					} else {
 						sheet.protectSheet(sheetPassword);
+					}
+					// Remove formulas from the race sheets
+					int rowStart = 1;
+					int rowEnd = sheet.getLastRowNum() + 1;
+					for (int rowNum = rowStart; rowNum < rowEnd; rowNum++) {
+						Row r = sheet.getRow(rowNum);
+						int colStart = Math.min(r.getLastCellNum(), FORMULA_REMOVAL_START_COL);
+						int colEnd = Math.min(r.getLastCellNum(), FORMULA_REMOVAL_END_COL);
+						for (int cn = colStart; cn < colEnd; cn++) {
+							Cell c = r.getCell(cn, Row.RETURN_BLANK_AS_NULL);
+							if (c != null) {
+								c.setCellFormula(null);
+							}
+						}
 					}
 				}
 				wb.setWorkbookPassword(sheetPassword, null);
