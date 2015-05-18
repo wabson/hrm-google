@@ -40,6 +40,10 @@ import org.apache.poi.POIXMLProperties;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.util.CellRangeAddressList;
+import org.apache.poi.xssf.usermodel.XSSFDataValidation;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationConstraint;
+import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.codehaus.jackson.JsonGenerationException;
@@ -307,6 +311,20 @@ public class HomeController {
 								c.setCellFormula(null);
 							}
 						}
+					}
+					// Remove data validation from the sheet
+					// First we have to set up a new validation, or sheet.getDataValidations() returns an empty list
+					XSSFDataValidationHelper dvHelper = new XSSFDataValidationHelper(sheet);
+					XSSFDataValidationConstraint dvConstraint = (XSSFDataValidationConstraint) dvHelper.createExplicitListConstraint(new String[]{"11", "21", "31"});
+					CellRangeAddressList addressList = new CellRangeAddressList(0, 0, 0, 0);
+					XSSFDataValidation validation = (XSSFDataValidation)dvHelper.createValidation(dvConstraint, addressList);
+					validation.setSuppressDropDownArrow(false);
+					validation.setShowErrorBox(true);
+					sheet.addValidationData(validation);
+					if (sheet.getDataValidations().size() > 0) {
+						sheet.getCTWorksheet().unsetDataValidations();
+						// This sets the xsi:isNull property on the <dataValidations> element which causes the file to be unreadable by Excel
+						//sheet.getCTWorksheet().setDataValidations(null);
 					}
 				}
 				wb.setWorkbookPassword(sheetPassword, null);
