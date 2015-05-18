@@ -38,6 +38,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.poi.POIXMLProperties;
 import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonNode;
@@ -272,6 +273,28 @@ public class HomeController {
 				versionProperty.setR8(hrmVersion);
 				versionProperty.setFmtid("{D5CDD505-2E9C-101B-9397-08002B2CF9AE}");
 				versionProperty.setPid(3);
+
+				String sheetPassword = fileType.toUpperCase();
+				XSSFSheet sheet;
+				String sheetName;
+				int numSheets = wb.getNumberOfSheets();
+				for (int i = 0; i < numSheets; i++) {
+					sheet = wb.getSheetAt(i);
+					sheetName = sheet.getSheetName();
+					// Set sheet protection
+					if (sheetName.equals("Finishes") || sheetName.equals("Clubs")) {
+						sheet.protectSheet("");
+					} else if (sheetName.indexOf("Results") > -1) {
+						// No protection, at least for HRM (ARM seems to still apply empty password, Nationals applies none for Divisional / Singles but empty password for Doubles!)
+						if (sheet.getProtect()) {
+							sheet.protectSheet(null); // Throws IndexOutOfBoundsException if locking not enabled
+						}
+					} else {
+						sheet.protectSheet(sheetPassword);
+					}
+				}
+				wb.setWorkbookPassword(sheetPassword, null);
+				wb.lockStructure();
 
 				final File exportFile = File.createTempFile("hrmexport-", ".xlsx");
 				OutputStream eos = new FileOutputStream(exportFile);
