@@ -79,7 +79,13 @@ public class HomeController {
 
 	private static final int FORMULA_REMOVAL_START_COL = 11;
 	private static final int FORMULA_REMOVAL_END_COL = 15;
+
 	private static final double HRM_VERSION = 11.0;
+	private static final String HRM_TYPE_HASLER = "HRM";
+	private static final String HRM_TYPE_NATIONALS = "NRM";
+	private static final String HRM_TYPE_ASSESSMENT = "ARM";
+
+	private static final String PROP_FMTID = "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}";
 	
 	@Autowired
 	public HomeController(Google google) {
@@ -259,31 +265,52 @@ public class HomeController {
 				}
 				tos.close();
 
-				// Write properties using POI
-				String fileType = "hrm";
+				String fileType = null;
 				double hrmVersion = HRM_VERSION;
+
+				// Modify the .xlsx file using POI
+				// TODO Refactor this all into a helper class
 
 				OPCPackage pkg = OPCPackage.open(temp);
 				XSSFWorkbook wb = new XSSFWorkbook(pkg);
+
+				int numSheets = wb.getNumberOfSheets();
+
+				// Auto-detect the sheet type based on the first sheet name
+				if (numSheets > 0) {
+					String firstSheetName = wb.getSheetAt(0).getSheetName();
+					if (firstSheetName.equals("Div1")) {
+						fileType = HRM_TYPE_HASLER;
+					} else if (firstSheetName.equals("SMK1")) {
+						fileType = HRM_TYPE_ASSESSMENT;
+					} else if (firstSheetName.equals("U12 M")) {
+						fileType = HRM_TYPE_NATIONALS;
+					}
+				}
+
+				// Write properties
 				POIXMLProperties props = wb.getProperties();
 				POIXMLProperties.CustomProperties cust =  props.getCustomProperties();
 
-				CTProperty hrmProperty = cust.getUnderlyingProperties().addNewProperty();
-				hrmProperty.setBool(true);
-				hrmProperty.setName(fileType.toUpperCase());
-				hrmProperty.setFmtid("{D5CDD505-2E9C-101B-9397-08002B2CF9AE}");
-				hrmProperty.setPid(2);
-				
+				if (fileType != null) {
+					CTProperty hrmProperty = cust.getUnderlyingProperties().addNewProperty();
+					hrmProperty.setBool(true);
+					hrmProperty.setName(fileType);
+					hrmProperty.setFmtid(PROP_FMTID);
+					hrmProperty.setPid(2);
+				}
+
 				CTProperty versionProperty = cust.getUnderlyingProperties().addNewProperty();
 				versionProperty.setName("Version");
 				versionProperty.setR8(hrmVersion);
-				versionProperty.setFmtid("{D5CDD505-2E9C-101B-9397-08002B2CF9AE}");
+				versionProperty.setFmtid(PROP_FMTID);
 				versionProperty.setPid(3);
 
-				String sheetPassword = fileType.toUpperCase();
+				String sheetPassword = fileType;
 				XSSFSheet sheet;
 				String sheetName;
-				int numSheets = wb.getNumberOfSheets();
+
+				// Go through sheets
 				for (int i = 0; i < numSheets; i++) {
 					sheet = wb.getSheetAt(i);
 					sheetName = sheet.getSheetName();
@@ -327,6 +354,8 @@ public class HomeController {
 						//sheet.getCTWorksheet().setDataValidations(null);
 					}
 				}
+
+				// Finally, protect the workbook
 				wb.setWorkbookPassword(sheetPassword, null);
 				wb.lockStructure();
 
