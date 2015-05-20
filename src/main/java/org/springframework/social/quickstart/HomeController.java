@@ -162,12 +162,12 @@ public class HomeController {
 
 		String[] parents = { "root" };
 		String srcId = null;
-		String raceType = command.getType();
-		if (raceType.equals("hrm")) {
+		String raceType = command.getType().toUpperCase();
+		if (raceType.equals(HRM_TYPE_HASLER)) {
 			srcId = "0AsA0SXNo_BkZdGxiTlhsQ08zcUxpTW5VaUt2N0F0MlE";
-		} else if (raceType.equals("arm")) {
+		} else if (raceType.equals(HRM_TYPE_ASSESSMENT)) {
 			srcId = "0AsA0SXNo_BkZdC1hdUhfeDdBVWppdVBESHZyaThiMkE";
-		} else if (raceType.equals("nrm")) {
+		} else if (raceType.equals(HRM_TYPE_NATIONALS)) {
 			srcId = "0AsA0SXNo_BkZdEd3N1ZsdzlkbnFyRFkzNm45YTJkbFE";
 		}
 		DriveOperations driveOperations = google.driveOperations();
