@@ -355,6 +355,15 @@ public class HomeController {
 					}
 				}
 
+				// Remove any sheets which should not be present for the official HRM
+				String[] disallowedSheets = { "Starts" };
+				for (int i = 0; i < disallowedSheets.length; i++) {
+					int sheetIndex = wb.getSheetIndex(disallowedSheets[i]);
+					if (sheetIndex > -1) {
+						wb.removeSheetAt(sheetIndex);
+					}
+				}
+
 				// Finally, protect the workbook
 				wb.setWorkbookPassword(sheetPassword, null);
 				wb.lockStructure();
