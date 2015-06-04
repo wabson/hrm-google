@@ -60,6 +60,7 @@ import org.springframework.social.google.api.drive.DriveFileQueryBuilder;
 import org.springframework.social.google.api.drive.DriveFilesPage;
 import org.springframework.social.google.api.drive.DriveOperations;
 import org.springframework.social.google.api.drive.FileProperty;
+import org.springframework.social.google.api.drive.PropertyVisibility;
 import org.springframework.social.quickstart.drive.DateOperators;
 import org.springframework.social.quickstart.drive.DriveSearchForm;
 import org.springframework.social.quickstart.drive.OptionalBoolean;
@@ -116,6 +117,8 @@ public class HomeController {
 			queryBuilder.titleContains(command.getTitleContains());
 		}
 		
+		queryBuilder.propertiesHas("hrmType", "HRM", PropertyVisibility.PUBLIC);
+
 		DriveFilesPage files = queryBuilder.getPage();
 
 		Map<DateOperators, String> dateOperators = new LinkedHashMap<DateOperators, String>();
