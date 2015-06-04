@@ -60,7 +60,6 @@ import org.springframework.social.google.api.drive.DriveFileQueryBuilder;
 import org.springframework.social.google.api.drive.DriveFilesPage;
 import org.springframework.social.google.api.drive.DriveOperations;
 import org.springframework.social.google.api.drive.FileProperty;
-import org.springframework.social.google.api.userinfo.GoogleUserProfile;
 import org.springframework.social.quickstart.drive.DateOperators;
 import org.springframework.social.quickstart.drive.DriveSearchForm;
 import org.springframework.social.quickstart.drive.OptionalBoolean;
@@ -105,8 +104,6 @@ public class HomeController {
 	@RequestMapping(value="/", method=GET)
 	public ModelAndView getDriveFiles(DriveSearchForm command) {
 
-        GoogleUserProfile profile = google.userOperations().getUserProfile();
-
 		DriveFileQueryBuilder queryBuilder = google.driveOperations().driveFileQuery()
 				.fromPage(command.getPageToken());
 
@@ -135,8 +132,7 @@ public class HomeController {
 			.addObject("dateOperators", dateOperators)
 			.addObject("booleanOperators", booleanOperators)
 			.addObject("command", command)
-			.addObject("files", files)
-            .addObject("profile", profile);
+			.addObject("files", files);
 	}
 	
 	@RequestMapping(value="workbook", method=GET)
