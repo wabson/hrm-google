@@ -17,7 +17,9 @@
 </head>
 
 <body>
-	<c:set var="selected" value="drive" />
+	<c:if test="${empty selected}">
+		<c:set var="selected" value="none" />
+	</c:if>
 	<jsp:directive.include file="bar.jspf" />
 
 	<div class="container">

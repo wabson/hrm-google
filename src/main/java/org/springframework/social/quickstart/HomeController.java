@@ -101,9 +101,28 @@ public class HomeController {
 	public void handleException(Exception e) {
 		e.printStackTrace();
 	}
-	
+
 	@RequestMapping(value="/", method=GET)
-	public ModelAndView getDriveFiles(DriveSearchForm command) {
+	public String home(DriveSearchForm command) {
+		return "redirect:/hrm";
+	}
+
+	@RequestMapping(value="/hrm", method=GET)
+	public ModelAndView getHRMFiles(DriveSearchForm command) {
+		return getDriveFiles(HRM_TYPE_HASLER, command);
+	}
+	
+	@RequestMapping(value="/arm", method=GET)
+	public ModelAndView getARMFiles(DriveSearchForm command) {
+		return getDriveFiles(HRM_TYPE_ASSESSMENT, command);
+	}
+	
+	@RequestMapping(value="/nrm", method=GET)
+	public ModelAndView getNRMFiles(DriveSearchForm command) {
+		return getDriveFiles(HRM_TYPE_NATIONALS, command);
+	}
+
+	private ModelAndView getDriveFiles(String hrmType, DriveSearchForm command) {
 
 		DriveFileQueryBuilder queryBuilder = google.driveOperations().driveFileQuery()
 				.fromPage(command.getPageToken());
@@ -117,7 +136,7 @@ public class HomeController {
 			queryBuilder.titleContains(command.getTitleContains());
 		}
 		
-		queryBuilder.propertiesHas("hrmType", "HRM", PropertyVisibility.PUBLIC);
+		queryBuilder.propertiesHas("hrmType", hrmType, PropertyVisibility.PUBLIC);
 
 		DriveFilesPage files = queryBuilder.getPage();
 
@@ -135,7 +154,8 @@ public class HomeController {
 			.addObject("dateOperators", dateOperators)
 			.addObject("booleanOperators", booleanOperators)
 			.addObject("command", command)
-			.addObject("files", files);
+			.addObject("files", files)
+			.addObject("selected", hrmType.toLowerCase());
 	}
 	
 	@RequestMapping(value="workbook", method=GET)
