@@ -10,41 +10,32 @@
 	</jsp:text>
 	<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
-<title>HRM Google - New Workbook</title>
+<title>HRM Google - New Race File</title>
 <jsp:directive.include file="header.jspf" />
 </head>
 
 <body>
-	<c:set var="selected" value="tasks" />
-	<c:set var="subselected" value="tasklists" />
 	<jsp:directive.include file="bar.jspf" />
 
 	<div class="container">
 	
-		<h1>Workbook Details</h1>
+		<h1>New Race File</h1>
 
 		<div class="row">
 
 			<div class="span10 columns">
 
 				<form:form>
+					<form:hidden path="type" />
 					<div class="clearfix">
 						<label for="title">Name</label>
 						<div class="input">
 							<form:input path="title" cssClass="xlarge" />
 						</div>
-						<label for="title">Type</label>
-						<div class="input">
-							<form:select path="type" cssClass="xlarge">
-								<form:option value="hrm">Hasler Race</form:option>
-								<form:option value="arm">Assessment Race</form:option>
-								<form:option value="nrm">Nationals Race</form:option>
-							</form:select>
-						</div>
 					</div>
 					<div class="actions">
 						<input type="submit" class="btn btn-primary" value="Save" />
-						<a href="./" class="btn leftMargin">Cancel</a>
+						<a href="../${selected}" class="btn leftMargin">Cancel</a>
 						<c:if test="${param.id != null}">
 							<input name="delete" type="submit" class="btn btn-danger leftMargin" value="Delete" 
 								onclick="return confirm('Are you sure you want to delete this task list?')" />

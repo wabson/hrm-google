@@ -5,16 +5,16 @@
 <div class="navbar navbar-fixed-top">
 	<div class="navbar-inner">
 		<div class="container">
-			<a href="./" class="brand">HRM Google</a>
+			<a href="${pageContext.request.contextPath}" class="brand">HRM Google</a>
 	
 			<ul class="nav">
-				<li class="${selected == 'hrm' ? 'active' : ''}"><a href="./hrm">Haslers</a></li>
+				<li class="${selected == 'hrm' ? 'active' : ''}"><a href="${pageContext.request.contextPath}/hrm">Haslers</a></li>
 			</ul>
 			<ul class="nav">
-				<li class="${selected == 'arm' ? 'active' : ''}"><a href="./arm">Assessments</a></li>
+				<li class="${selected == 'arm' ? 'active' : ''}"><a href="${pageContext.request.contextPath}/arm">Assessments</a></li>
 			</ul>
 			<ul class="nav">
-				<li class="${selected == 'nrm' ? 'active' : ''}"><a href="./nrm">Nationals</a></li>
+				<li class="${selected == 'nrm' ? 'active' : ''}"><a href="${pageContext.request.contextPath}/nrm">Nationals</a></li>
 			</ul>
 			
 			<ul class="nav pull-right">

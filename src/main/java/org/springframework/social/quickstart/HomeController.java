@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
@@ -68,6 +69,7 @@ import org.springframework.social.quickstart.drive.WorksheetForm;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
@@ -158,10 +160,13 @@ public class HomeController {
 			.addObject("selected", hrmType.toLowerCase());
 	}
 	
-	@RequestMapping(value="workbook", method=GET)
-	public ModelAndView task() {
+	@RequestMapping(value="{hrmType}/new", method=GET)
+	public ModelAndView createWorksheet(@PathVariable String hrmType) {
 		
-		return new ModelAndView("worksheet", "command", new WorksheetForm());
+		WorksheetForm form = new WorksheetForm();
+		form.setType(hrmType);
+		return new ModelAndView("worksheet", "command", form)
+			.addObject("selected", hrmType.toLowerCase()); // Ensures nav context is shown correctly
 	}
 	
 	@RequestMapping(value="workbook", method=GET, params="id")
@@ -172,7 +177,7 @@ public class HomeController {
 		return new ModelAndView("task", "command", command);
 	}
 	
-	@RequestMapping(value="workbook", method=POST)
+	@RequestMapping(value="{hrmType}/new", method=POST)
 	public ModelAndView saveWorksheet(WorksheetForm command, BindingResult result) {
 		
 		if(result.hasErrors()) {
@@ -192,7 +197,8 @@ public class HomeController {
 		DriveOperations driveOperations = google.driveOperations();
 		DriveFile file = driveOperations.copy(srcId, parents, command.getTitle());
 		// Record HRM type in a custom property
-		FileProperty fp = new FileProperty("hrmType", raceType);
+		driveOperations.getProperties(file.getId());
+		FileProperty fp = new FileProperty("hrmType", raceType, PropertyVisibility.PUBLIC);
 		driveOperations.addProperty(file.getId(), fp);
 		return new ModelAndView("redirect:/", "list", command.getList());
 	}
@@ -243,7 +249,18 @@ public class HomeController {
 	@RequestMapping(value="copyfile", method=POST, produces="application/json")
 	public void copyFile(String fileId, String parentId, String newName, HttpServletResponse response) throws JsonGenerationException, JsonMappingException, IOException {
 		Writer writer = response.getWriter();
-		DriveFile file = google.driveOperations().copy(fileId, new String[]{parentId}, newName);
+		DriveOperations driveOperations = google.driveOperations();
+		DriveFile file = driveOperations.copy(fileId, new String[]{parentId}, newName);
+
+		// Copy HRM type if defined in custom properties
+		List<FileProperty> fps = driveOperations.getProperties(fileId);
+		for (FileProperty fp : fps) {
+			if (fp.getKey().equals("hrmType")) {
+				driveOperations.addProperty(file.getId(), fp);
+			}
+		}
+
+		// Return JSON response
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode rootNode = mapper.createObjectNode(); // will be of type ObjectNode
 		((ObjectNode) rootNode).put("id", file.getId());

@@ -28,9 +28,11 @@
 
 			<h1>My Files</h1>
 			
+			<c:if test="${not empty selected}">
 			<p class="pull-right">
-				<a href="workbook" class="btn success leftMargin">New HRM Workbook</a>
+				<a href="${selected}/new" class="btn success leftMargin">New Race File</a>
 			</p>
+			</c:if>
 			
 			<form:form method="get" cssClass="form-horizontal">
 				<form:hidden path="parentId" />
