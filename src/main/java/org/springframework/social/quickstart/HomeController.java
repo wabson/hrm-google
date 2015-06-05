@@ -188,11 +188,11 @@ public class HomeController {
 		String srcId = null;
 		String raceType = command.getType().toUpperCase();
 		if (raceType.equals(HRM_TYPE_HASLER)) {
-			srcId = "0AsA0SXNo_BkZdGxiTlhsQ08zcUxpTW5VaUt2N0F0MlE";
+			srcId = "1V7FTXOszEFtA23BAmYBYekbRHAA3gaz3sZPLaJfacnw";
 		} else if (raceType.equals(HRM_TYPE_ASSESSMENT)) {
-			srcId = "0AsA0SXNo_BkZdC1hdUhfeDdBVWppdVBESHZyaThiMkE";
+			srcId = "10JNPb7LA0QIERO93JPgxsSn129dR-AddsAnHAx2iBXM";
 		} else if (raceType.equals(HRM_TYPE_NATIONALS)) {
-			srcId = "0AsA0SXNo_BkZdEd3N1ZsdzlkbnFyRFkzNm45YTJkbFE";
+			srcId = "1A9USkMFEZtJL2KmsdFljk4eHag07yPvmZq3oInCYPo0";
 		}
 		DriveOperations driveOperations = google.driveOperations();
 		DriveFile file = driveOperations.copy(srcId, parents, command.getTitle());
