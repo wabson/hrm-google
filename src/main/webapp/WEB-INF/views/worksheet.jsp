@@ -19,7 +19,7 @@
 
 	<div class="container">
 	
-		<h1>New Race File</h1>
+		<h1>New ${hrmType} File</h1>
 
 		<div class="row">
 
@@ -28,7 +28,7 @@
 				<form:form>
 					<form:hidden path="type" />
 					<div class="clearfix">
-						<label for="title">Name</label>
+						<label for="title">File Name</label>
 						<div class="input">
 							<form:input path="title" cssClass="xlarge" />
 						</div>

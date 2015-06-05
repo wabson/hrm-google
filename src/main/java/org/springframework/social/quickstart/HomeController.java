@@ -157,7 +157,8 @@ public class HomeController {
 			.addObject("booleanOperators", booleanOperators)
 			.addObject("command", command)
 			.addObject("files", files)
-			.addObject("selected", hrmType.toLowerCase());
+			.addObject("selected", hrmType.toLowerCase()) // Ensures nav context is shown correctly
+			.addObject("hrmType", hrmType.toUpperCase()); // For labels
 	}
 	
 	@RequestMapping(value="{hrmType}/new", method=GET)
@@ -166,7 +167,8 @@ public class HomeController {
 		WorksheetForm form = new WorksheetForm();
 		form.setType(hrmType);
 		return new ModelAndView("worksheet", "command", form)
-			.addObject("selected", hrmType.toLowerCase()); // Ensures nav context is shown correctly
+			.addObject("selected", hrmType.toLowerCase()) // Ensures nav context is shown correctly
+			.addObject("hrmType", hrmType.toUpperCase()); // For labels
 	}
 	
 	@RequestMapping(value="workbook", method=GET, params="id")

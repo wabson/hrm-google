@@ -26,11 +26,11 @@
 	
 		<div class="content">
 
-			<h1>My Files</h1>
+			<h1>My ${hrmType} Files</h1>
 			
 			<c:if test="${not empty selected}">
 			<p class="pull-right">
-				<a href="${selected}/new" class="btn success leftMargin">New Race File</a>
+				<a href="${selected}/new" class="btn success leftMargin">New ${hrmType} File</a>
 			</p>
 			</c:if>
 			
