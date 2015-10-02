@@ -370,12 +370,14 @@ public class HomeController {
 					int rowEnd = sheet.getLastRowNum() + 1;
 					for (int rowNum = rowStart; rowNum < rowEnd; rowNum++) {
 						Row r = sheet.getRow(rowNum);
-						int colStart = Math.min(r.getLastCellNum(), FORMULA_REMOVAL_START_COL);
-						int colEnd = Math.min(r.getLastCellNum(), FORMULA_REMOVAL_END_COL);
-						for (int cn = colStart; cn < colEnd; cn++) {
+						short colStart = r.getFirstCellNum();
+						short colEnd = r.getLastCellNum();
+						for (short cn = colStart; cn < colEnd; cn++) {
 							Cell c = r.getCell(cn, Row.RETURN_BLANK_AS_NULL);
 							if (c != null) {
-								c.setCellFormula(null);
+								if (c.getCellType() == Cell.CELL_TYPE_FORMULA) {
+									c.setCellFormula(null);
+								}
 							}
 						}
 					}
