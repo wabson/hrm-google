@@ -378,6 +378,7 @@ public class HomeController {
 								if (c.getCellType() == Cell.CELL_TYPE_FORMULA) {
 									c.setCellFormula(null);
 								}
+								c.removeCellComment();
 							}
 						}
 					}
