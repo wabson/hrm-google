@@ -361,7 +361,9 @@ public class HomeController {
 							sheet.protectSheet(null); // Throws IndexOutOfBoundsException if locking not enabled
 						}
 					} else {
-						sheet.protectSheet(sheetPassword);
+						if (sheetPassword != null) {
+							sheet.protectSheet(sheetPassword);
+						}
 					}
 					// Remove formulas from the race sheets
 					int rowStart = 1;
