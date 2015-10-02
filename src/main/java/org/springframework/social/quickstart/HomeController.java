@@ -395,6 +395,8 @@ public class HomeController {
 						// This sets the xsi:isNull property on the <dataValidations> element which causes the file to be unreadable by Excel
 						//sheet.getCTWorksheet().setDataValidations(null);
 					}
+					// Remove freeze pane
+					sheet.createFreezePane(0,0);
 				}
 
 				// Remove any sheets which should not be present for the official HRM
