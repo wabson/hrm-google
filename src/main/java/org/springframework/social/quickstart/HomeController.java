@@ -321,7 +321,7 @@ public class HomeController {
 						fileType = HRM_TYPE_HASLER;
 					} else if (firstSheetName.equals("SMK1")) {
 						fileType = HRM_TYPE_ASSESSMENT;
-					} else if (firstSheetName.equals("U12 M")) {
+					} else if (firstSheetName.equals("Div7") || firstSheetName.equals("U12 M")) {
 						fileType = HRM_TYPE_NATIONALS;
 					}
 				}
