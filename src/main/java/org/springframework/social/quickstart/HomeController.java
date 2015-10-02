@@ -366,6 +366,7 @@ public class HomeController {
 						}
 					}
 					// Remove formulas from the race sheets
+					Row headerRow = sheet.getRow(0);
 					int rowStart = 1;
 					int rowEnd = sheet.getLastRowNum() + 1;
 					for (int rowNum = rowStart; rowNum < rowEnd; rowNum++) {
@@ -373,8 +374,15 @@ public class HomeController {
 						short colStart = r.getFirstCellNum();
 						short colEnd = r.getLastCellNum();
 						for (short cn = colStart; cn < colEnd; cn++) {
-							Cell c = r.getCell(cn, Row.RETURN_BLANK_AS_NULL);
+							Cell c = r.getCell(cn, Row.RETURN_NULL_AND_BLANK);
 							if (c != null) {
+								Cell headerCell = headerRow.getCell(cn, Row.RETURN_BLANK_AS_NULL);
+								if (headerCell != null) {
+									String colName = headerCell.getStringCellValue();
+									if ("Paid".equals(colName)) {
+										c.setCellType(Cell.CELL_TYPE_BLANK);
+									}
+								}
 								if (c.getCellType() == Cell.CELL_TYPE_FORMULA) {
 									c.setCellFormula(null);
 								}
