@@ -430,6 +430,9 @@ public class HomeController {
 										if ("Paid".equals(colName)) {
 											c.setCellType(Cell.CELL_TYPE_BLANK);
 										}
+										if ("Notes".equals(colName) && !c.getStringCellValue().equals("ill")) {
+											c.setCellType(Cell.CELL_TYPE_BLANK);
+										}
 									}
 									if (c.getCellType() == Cell.CELL_TYPE_FORMULA) {
 										c.setCellFormula(null);
