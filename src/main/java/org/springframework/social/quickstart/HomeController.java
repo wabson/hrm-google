@@ -416,7 +416,7 @@ public class HomeController {
 				}
 
 				// Remove any sheets which should not be present for the official HRM
-				String[] disallowedSheets = { "Starts" };
+				String[] disallowedSheets = { "Starts", "Sheet1" };
 				for (int i = 0; i < disallowedSheets.length; i++) {
 					int sheetIndex = wb.getSheetIndex(disallowedSheets[i]);
 					if (sheetIndex > -1) {
