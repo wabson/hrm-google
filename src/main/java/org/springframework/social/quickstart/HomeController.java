@@ -40,8 +40,13 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.poi.POIXMLProperties;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.util.CellRangeAddressList;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFDataValidation;
 import org.apache.poi.xssf.usermodel.XSSFDataValidationConstraint;
 import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
@@ -348,10 +353,30 @@ public class HomeController {
 				XSSFSheet sheet;
 				String sheetName;
 
+				Font font = wb.createFont();
+				font.setFontHeightInPoints((short)10);
+				font.setFontName("Courier New");
+				Font boldFont = wb.createFont();
+				boldFont.setFontHeightInPoints((short)10);
+				boldFont.setFontName("Courier New");
+				boldFont.setBold(true);
+
+				XSSFCellStyle bodyStyle = wb.createCellStyle();
+				bodyStyle.setFont(font);
+
+				XSSFCellStyle firstColumnStyle = wb.createCellStyle();
+				firstColumnStyle.setFillForegroundColor(new XSSFColor(new java.awt.Color(255, 255, 153)));
+				firstColumnStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
+				firstColumnStyle.setBorderRight(CellStyle.BORDER_THIN);
+				firstColumnStyle.setRightBorderColor(IndexedColors.BLACK.getIndex());
+				firstColumnStyle.setFont(boldFont);
+
 				// Go through sheets
+				boolean isRaceSheet = true;
 				for (int i = 0; i < numSheets; i++) {
 					sheet = wb.getSheetAt(i);
 					sheetName = sheet.getSheetName();
+					isRaceSheet = isRaceSheet && !sheetName.equals("Finishes");
 					// Set sheet protection
 					if (sheetName.equals("Finishes") || sheetName.equals("Clubs")) {
 						sheet.protectSheet("");
@@ -393,6 +418,13 @@ public class HomeController {
 										c.setCellFormula(null);
 									}
 									c.removeCellComment();
+									if (isRaceSheet) {
+										if (cn > 0) {
+											c.setCellStyle(bodyStyle);
+										} else {
+											c.setCellStyle(firstColumnStyle);
+										}
+									}
 								}
 							}
 						}
