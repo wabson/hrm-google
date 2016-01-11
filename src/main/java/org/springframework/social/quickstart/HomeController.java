@@ -26,9 +26,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -41,12 +44,14 @@ import org.apache.poi.POIXMLProperties;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
+import org.apache.poi.xssf.usermodel.XSSFDataFormat;
 import org.apache.poi.xssf.usermodel.XSSFDataValidation;
 import org.apache.poi.xssf.usermodel.XSSFDataValidationConstraint;
 import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
@@ -316,6 +321,7 @@ public class HomeController {
 
 				OPCPackage pkg = OPCPackage.open(temp);
 				XSSFWorkbook wb = new XSSFWorkbook(pkg);
+				CreationHelper createHelper = wb.getCreationHelper();
 
 				int numSheets = wb.getNumberOfSheets();
 
@@ -371,6 +377,17 @@ public class HomeController {
 				firstColumnStyle.setRightBorderColor(IndexedColors.BLACK.getIndex());
 				firstColumnStyle.setFont(boldFont);
 
+				CellStyle dateStyle = (CellStyle) bodyStyle.clone();
+				short dateFormat = createHelper.createDataFormat().getFormat("dd/mm/yy");
+				dateStyle.setDataFormat(dateFormat);
+
+				CellStyle timeStyle = (CellStyle) bodyStyle.clone();
+				short timeFormat = createHelper.createDataFormat().getFormat("H:MM:SS");
+				timeStyle.setDataFormat(timeFormat);
+
+				Pattern numberPattern = Pattern.compile("\\d+");
+				Pattern timePattern = Pattern.compile("(\\d{1,2}):(\\d{2}):(\\d{2})");
+
 				// Go through sheets
 				boolean isRaceSheet = true;
 				for (int i = 0; i < numSheets; i++) {
@@ -416,11 +433,31 @@ public class HomeController {
 									}
 									if (c.getCellType() == Cell.CELL_TYPE_FORMULA) {
 										c.setCellFormula(null);
+										// Numeric values set as strings without this
+										if (numberPattern.matcher(c.getStringCellValue()).matches()) {
+											c.setCellValue(Double.parseDouble(c.getStringCellValue()));
+										} else {
+											Matcher timeMatcher = timePattern.matcher(c.getStringCellValue());
+											if (timeMatcher.matches()) {
+												Calendar calendar = Calendar.getInstance();
+												calendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(timeMatcher.group(1)));
+												calendar.set(Calendar.MINUTE, Integer.parseInt(timeMatcher.group(2)));
+												calendar.set(Calendar.SECOND, Integer.parseInt(timeMatcher.group(3)));
+												calendar.set(Calendar.MILLISECOND, 0);
+												c.setCellValue(calendar);
+											}
+										}
 									}
 									c.removeCellComment();
 									if (isRaceSheet) {
 										if (cn > 0) {
-											c.setCellStyle(bodyStyle);
+											if ("Expiry".equals(colName) && c.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+												c.setCellStyle(dateStyle);
+											} else if ((("Time+/-".equals(colName) || "Start".equals(colName) || "Finish".equals(colName) || "Elapsed".equals(colName))) && c.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+												c.setCellStyle(timeStyle);
+											} else {
+												c.setCellStyle(bodyStyle);
+											}
 										} else {
 											c.setCellStyle(firstColumnStyle);
 										}
