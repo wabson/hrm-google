@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -388,6 +389,8 @@ public class HomeController {
 				Pattern numberPattern = Pattern.compile("\\d+");
 				Pattern timePattern = Pattern.compile("(\\d{1,2}):(\\d{2}):(\\d{2})");
 
+				List<String> columnsToRemove = new ArrayList<String>();
+				columnsToRemove.add("Due");
 				// Go through sheets
 				boolean isRaceSheet = true;
 				for (int i = 0; i < numSheets; i++) {
@@ -439,6 +442,7 @@ public class HomeController {
 										// Numeric values set as strings without this
 										if (numberPattern.matcher(c.getStringCellValue()).matches()) {
 											c.setCellValue(Double.parseDouble(c.getStringCellValue()));
+											c.setCellType(Cell.CELL_TYPE_NUMERIC);
 										} else {
 											Matcher timeMatcher = timePattern.matcher(c.getStringCellValue());
 											if (timeMatcher.matches()) {
@@ -448,6 +452,7 @@ public class HomeController {
 												calendar.set(Calendar.SECOND, Integer.parseInt(timeMatcher.group(3)));
 												calendar.set(Calendar.MILLISECOND, 0);
 												c.setCellValue(calendar);
+												c.setCellType(Cell.CELL_TYPE_NUMERIC);
 											}
 										}
 									}
@@ -467,6 +472,22 @@ public class HomeController {
 									}
 								}
 							}
+						}
+						// Remove unwanted columns, now that we have finished iterating
+						ArrayList<Cell> headerCellsToRemove = new ArrayList<Cell>();
+						for (short cn = 0; cn < headerRow.getLastCellNum(); cn++) {
+							Cell cell = headerRow.getCell(cn);
+							try {
+								String colName = cell.getStringCellValue();
+								if (columnsToRemove.indexOf(colName) >= 0) {
+									headerCellsToRemove.add(cell);
+								}
+							} catch(IllegalStateException e) {
+								// We encountered a non-string value, move on
+							}
+						}
+						for (Cell cell : headerCellsToRemove) {
+							removeSheetColumn(sheet, cell.getColumnIndex());
 						}
 					}
 					// Remove data validation from the sheet
@@ -531,5 +552,75 @@ public class HomeController {
 		} else {
 			throw new Exception("No Excel export found!");
 		}
+	}
+
+	private static void removeSheetColumn(XSSFSheet sheet, int columnToDelete) {
+		int maxColumn = 0;
+		for ( int r=0; r < sheet.getLastRowNum()+1; r++ ){
+			Row row = sheet.getRow( r );
+
+			// if no row exists here; then nothing to do; next!
+			if ( row == null )
+				continue;
+
+			// if the row doesn't have this many columns then we are good; next!
+			int lastColumn = row.getLastCellNum();
+			if ( lastColumn > maxColumn )
+				maxColumn = lastColumn;
+
+			if ( lastColumn < columnToDelete )
+				continue;
+
+			for ( int x=columnToDelete+1; x < lastColumn + 1; x++ ){
+				Cell oldCell	= row.getCell(x-1);
+				if ( oldCell != null )
+					row.removeCell( oldCell );
+
+				Cell nextCell   = row.getCell( x );
+				if ( nextCell != null ){
+					Cell newCell	= row.createCell( x-1, nextCell.getCellType() );
+					cloneCell(newCell, nextCell);
+				}
+			}
+		}
+
+
+		// Adjust the column widths
+		for ( int c=0; c < maxColumn; c++ ){
+			sheet.setColumnWidth( c, sheet.getColumnWidth(c+1) );
+		}
+	}
+
+	/*
+	 * Takes an existing Cell and merges all the styles and forumla
+	 * into the new one
+	 */
+	private static void cloneCell( Cell cNew, Cell cOld ){
+
+		switch ( cOld.getCellType() ){
+			case Cell.CELL_TYPE_BOOLEAN:{
+				cNew.setCellValue( cOld.getBooleanCellValue() );
+				break;
+			}
+			case Cell.CELL_TYPE_NUMERIC:{
+				cNew.setCellValue( cOld.getNumericCellValue() );
+				break;
+			}
+			case Cell.CELL_TYPE_STRING:{
+				cNew.setCellValue( cOld.getStringCellValue() );
+				break;
+			}
+			case Cell.CELL_TYPE_ERROR:{
+				cNew.setCellValue( cOld.getErrorCellValue() );
+				break;
+			}
+			case Cell.CELL_TYPE_FORMULA:{
+				cNew.setCellFormula( cOld.getCellFormula() );
+				break;
+			}
+		}
+
+		cNew.setCellStyle( cOld.getCellStyle() );
+
 	}
 }
