@@ -298,6 +298,18 @@ public class HomeController {
 		if (file == null) {
 			throw new Exception("File not found");
 		}
+		DriveOperations driveOperations = google.driveOperations();
+		List<FileProperty> driveProps = driveOperations.getProperties(file.getId());
+		String hrmRegion = "LS";
+		String hrmRaceName = file.getTitle();
+		for (FileProperty fileProperty : driveProps) {
+			if (fileProperty.getKey().equals("hrmRegion")) {
+				hrmRegion = fileProperty.getValue();
+			}
+			if (fileProperty.getKey().equals("hrmRaceName")) {
+				hrmRaceName = fileProperty.getValue();
+			}
+		}
 		String exportUri = file.getExportLinks().get("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 		if (exportUri != null) {
 
@@ -511,6 +523,7 @@ public class HomeController {
 				if (finishTimes != null && finishTimes.size() > 0 && raceSheetNames.size() > 0) {
 					setHRMFinishTimes(wb, raceSheetNames, finishTimes, timeStyle);
 				}
+				setHRMRaceInfo(wb, hrmRaceName, hrmRegion);
 
 				// Remove any sheets which should not be present for the official HRM
 				String[] disallowedSheets = { SHEET_STARTS, "Sheet1" };
@@ -617,6 +630,18 @@ public class HomeController {
 				}
 				i ++;
 			}
+		}
+	}
+
+	private static void setHRMRaceInfo(XSSFWorkbook wb, String raceName, String raceRegion) {
+		XSSFSheet clubsSheet = wb.getSheet(SHEET_CLUBS);
+		if (clubsSheet != null) {
+			Row row = clubsSheet.getRow(0);
+			if (row == null) {
+				row = clubsSheet.createRow(0);
+			}
+			row.createCell(18, Cell.CELL_TYPE_STRING).setCellValue(raceRegion);
+			row.createCell(19, Cell.CELL_TYPE_STRING).setCellValue(raceName);
 		}
 	}
 
