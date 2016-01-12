@@ -101,7 +101,10 @@ public class HomeController {
 
 	private static final String PROP_FMTID = "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}";
 
+	private static final String SHEET_FINISHES = "Finishes";
 	private static final String SHEET_STARTS = "Starts";
+	private static final String SHEET_CLUBS = "Clubs";
+	private static final String SHEET_RESULTS = "Results";
 	private static final String SHEET_SUMMARY = "Summary";
 
 	private static Pattern numberPattern = Pattern.compile("\\d+");
@@ -406,9 +409,9 @@ public class HomeController {
 						raceSheetNames.add(sheetName);
 					}
 					// Set sheet protection
-					if (sheetName.equals("Finishes") || sheetName.equals("Clubs")) {
+					if (sheetName.equals(SHEET_FINISHES) || sheetName.equals(SHEET_CLUBS)) {
 						sheet.protectSheet("");
-					} else if (sheetName.indexOf("Results") > -1) {
+					} else if (sheetName.indexOf(SHEET_RESULTS) > -1) {
 						// No protection, at least for HRM (ARM seems to still apply empty password, Nationals applies none for Divisional / Singles but empty password for Doubles!)
 						if (sheet.getProtect()) {
 							sheet.protectSheet(null); // Throws IndexOutOfBoundsException if locking not enabled
