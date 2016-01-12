@@ -157,9 +157,9 @@ public class HomeController {
 		
 		if(hasText(command.getTitleContains())) {
 			queryBuilder.titleContains(command.getTitleContains());
+		} else {
+			queryBuilder.propertiesHas("hrmType", hrmType, PropertyVisibility.PUBLIC);
 		}
-		
-		queryBuilder.propertiesHas("hrmType", hrmType, PropertyVisibility.PUBLIC);
 
 		DriveFilesPage files = queryBuilder.getPage();
 
