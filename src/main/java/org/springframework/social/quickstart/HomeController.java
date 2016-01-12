@@ -411,6 +411,7 @@ public class HomeController {
 				List<String> raceSheetNames = new ArrayList<String>();
 				List<String> columnsToRemove = new ArrayList<String>();
 				columnsToRemove.add("Due");
+				columnsToRemove.add("Fee");
 				// Go through sheets
 				boolean isRaceSheet = true;
 				for (int i = 0; i < numSheets; i++) {
