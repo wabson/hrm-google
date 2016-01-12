@@ -474,13 +474,15 @@ public class HomeController {
 						ArrayList<Cell> headerCellsToRemove = new ArrayList<Cell>();
 						for (short cn = 0; cn < headerRow.getLastCellNum(); cn++) {
 							Cell cell = headerRow.getCell(cn);
-							try {
-								String colName = cell.getStringCellValue();
-								if (columnsToRemove.indexOf(colName) >= 0) {
-									headerCellsToRemove.add(cell);
+							if (cell != null) {
+								try {
+									String colName = cell.getStringCellValue();
+									if (columnsToRemove.indexOf(colName) >= 0) {
+										headerCellsToRemove.add(cell);
+									}
+								} catch(IllegalStateException e) {
+									// We encountered a non-string value, move on
 								}
-							} catch(IllegalStateException e) {
-								// We encountered a non-string value, move on
 							}
 						}
 						for (Cell cell : headerCellsToRemove) {
