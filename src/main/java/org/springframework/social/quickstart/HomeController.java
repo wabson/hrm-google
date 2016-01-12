@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -99,7 +100,13 @@ public class HomeController {
 	private static final String HRM_TYPE_ASSESSMENT = "ARM";
 
 	private static final String PROP_FMTID = "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}";
-	
+
+	private static final String SHEET_STARTS = "Starts";
+	private static final String SHEET_SUMMARY = "Summary";
+
+	private static Pattern numberPattern = Pattern.compile("\\d+");
+	private static Pattern timePattern = Pattern.compile("(\\d{1,2}):(\\d{2}):(\\d{2})");
+
 	@Autowired
 	public HomeController(Google google) {
 		this.google = google;
@@ -386,9 +393,7 @@ public class HomeController {
 				short timeFormat = createHelper.createDataFormat().getFormat("H:MM:SS");
 				timeStyle.setDataFormat(timeFormat);
 
-				Pattern numberPattern = Pattern.compile("\\d+");
-				Pattern timePattern = Pattern.compile("(\\d{1,2}):(\\d{2}):(\\d{2})");
-
+				List<String> raceSheetNames = new ArrayList<String>();
 				List<String> columnsToRemove = new ArrayList<String>();
 				columnsToRemove.add("Due");
 				// Go through sheets
@@ -396,7 +401,10 @@ public class HomeController {
 				for (int i = 0; i < numSheets; i++) {
 					sheet = wb.getSheetAt(i);
 					sheetName = sheet.getSheetName();
-					isRaceSheet = isRaceSheet && !sheetName.equals("Finishes");
+					isRaceSheet = isRaceSheet && !sheetName.equals(SHEET_FINISHES);
+					if (isRaceSheet) {
+						raceSheetNames.add(sheetName);
+					}
 					// Set sheet protection
 					if (sheetName.equals("Finishes") || sheetName.equals("Clubs")) {
 						sheet.protectSheet("");
@@ -440,21 +448,7 @@ public class HomeController {
 									if (c.getCellType() == Cell.CELL_TYPE_FORMULA) {
 										c.setCellFormula(null);
 										// Numeric values set as strings without this
-										if (numberPattern.matcher(c.getStringCellValue()).matches()) {
-											c.setCellValue(Double.parseDouble(c.getStringCellValue()));
-											c.setCellType(Cell.CELL_TYPE_NUMERIC);
-										} else {
-											Matcher timeMatcher = timePattern.matcher(c.getStringCellValue());
-											if (timeMatcher.matches()) {
-												Calendar calendar = Calendar.getInstance();
-												calendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(timeMatcher.group(1)));
-												calendar.set(Calendar.MINUTE, Integer.parseInt(timeMatcher.group(2)));
-												calendar.set(Calendar.SECOND, Integer.parseInt(timeMatcher.group(3)));
-												calendar.set(Calendar.MILLISECOND, 0);
-												c.setCellValue(calendar);
-												c.setCellType(Cell.CELL_TYPE_NUMERIC);
-											}
-										}
+										setNumericValue(c);
 									}
 									c.removeCellComment();
 									if (isRaceSheet) {
@@ -508,8 +502,13 @@ public class HomeController {
 					sheet.createFreezePane(0,0);
 				}
 
+				Map<String, Double> finishTimes = getStartTimes(wb);
+				if (finishTimes != null && finishTimes.size() > 0 && raceSheetNames.size() > 0) {
+					setHRMFinishTimes(wb, raceSheetNames, finishTimes, timeStyle);
+				}
+
 				// Remove any sheets which should not be present for the official HRM
-				String[] disallowedSheets = { "Starts", "Sheet1" };
+				String[] disallowedSheets = { SHEET_STARTS, "Sheet1" };
 				for (int i = 0; i < disallowedSheets.length; i++) {
 					int sheetIndex = wb.getSheetIndex(disallowedSheets[i]);
 					if (sheetIndex > -1) {
@@ -551,6 +550,68 @@ public class HomeController {
 			}
 		} else {
 			throw new Exception("No Excel export found!");
+		}
+	}
+
+	private static void setNumericValue(Cell c) {
+		if (c.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+			return;
+		}
+		if (numberPattern.matcher(c.getStringCellValue()).matches()) {
+			c.setCellValue(Double.parseDouble(c.getStringCellValue()));
+			c.setCellType(Cell.CELL_TYPE_NUMERIC);
+		} else {
+			Matcher timeMatcher = timePattern.matcher(c.getStringCellValue());
+			if (timeMatcher.matches()) {
+				Calendar calendar = Calendar.getInstance();
+				calendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(timeMatcher.group(1)));
+				calendar.set(Calendar.MINUTE, Integer.parseInt(timeMatcher.group(2)));
+				calendar.set(Calendar.SECOND, Integer.parseInt(timeMatcher.group(3)));
+				calendar.set(Calendar.MILLISECOND, 0);
+				c.setCellValue(calendar);
+				c.setCellType(Cell.CELL_TYPE_NUMERIC);
+			}
+		}
+	}
+
+	private static Map<String, Double> getStartTimes(XSSFWorkbook wb) {
+		Map<String, Double> times = new HashMap<String, Double>();
+		XSSFSheet startsSheet = wb.getSheet(SHEET_STARTS);
+		if (startsSheet == null) {
+			return null;
+		}
+		for (Row row : startsSheet) {
+			Cell raceNameCell = row.getCell(0);
+			Cell startTimeCell = row.getCell(1);
+			setNumericValue(startTimeCell);
+			if (raceNameCell != null && startTimeCell != null &&
+					raceNameCell.getCellType() == Cell.CELL_TYPE_STRING &&
+					startTimeCell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+				times.put(raceNameCell.getStringCellValue(), startTimeCell.getNumericCellValue());
+			}
+		}
+		return times;
+	}
+
+	private static void setHRMFinishTimes(XSSFWorkbook wb, List<String> sheetNames, Map<String, Double> times, CellStyle cellStyle) {
+		XSSFSheet summarySheet = wb.getSheet(SHEET_SUMMARY);
+		if (summarySheet != null) {
+			int i = 1;
+			for (String sheetName : sheetNames) {
+				Row row = summarySheet.getRow(i);
+				if (row == null) {
+					row = summarySheet.createRow(i);
+				}
+				// Add times to column AA from row 2 down, in the order that the sheets appear
+				Cell c = row.createCell(26, Cell.CELL_TYPE_BLANK);
+				if (times.get(sheetName) != null) {
+					c.setCellValue(times.get(sheetName));
+				}
+				if (cellStyle != null) {
+					c.setCellStyle(cellStyle);
+				}
+				i ++;
+			}
 		}
 	}
 
