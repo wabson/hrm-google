@@ -91,9 +91,6 @@ public class HomeController {
 
 	private final Google google;
 
-	private static final int FORMULA_REMOVAL_START_COL = 11;
-	private static final int FORMULA_REMOVAL_END_COL = 15;
-
 	private static final double HRM_VERSION = 11.0;
 	private static final String HRM_TYPE_HASLER = "HRM";
 	private static final String HRM_TYPE_NATIONALS = "NRM";
