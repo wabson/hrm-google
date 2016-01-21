@@ -16,6 +16,9 @@
 			<mvc:mapping path="/*"/>
 			<mvc:mapping path="/downloadfile/*"/>
 			<mvc:mapping path="/*/new"/>
+			<mvc:mapping path="/hrm/*"/>
+			<mvc:mapping path="/nrm/*"/>
+			<mvc:mapping path="/arm/*"/>
 			<ref bean="userInterceptor"/>
 		</mvc:interceptor>
 	</mvc:interceptors>

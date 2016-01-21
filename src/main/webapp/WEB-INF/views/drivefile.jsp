@@ -9,90 +9,45 @@
 	</jsp:text>
 	<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
-<title>Spring Social Google - Profile</title>
+<title>HRM Google - ${title}</title>
 <jsp:directive.include file="header.jspf" />
 </head>
 
 <body>
-	<c:set var="selected" value="plus" />
-	<c:set var="subselected" value="people" />
 	<jsp:directive.include file="bar.jspf" />
 
 	<div class="container">
-	
-		<jsp:directive.include file="plusops.jspf" />
 		
-		<h1>Profile</h1>
+		<h1>${title}</h1>
 		
-		<jsp:directive.include file="peopleform.jspf"/>
-		
-		<c:if test="${not empty person}">
+		<c:if test="${not empty file}">
 			<div class="span12 columns">
-				<form class="form-horizontal">
-					<div class="control-group">
-						<label class="control-label">Profile ID:</label>
-						<div class="controls">
-							<span class="uneditable-input input-xxlarge">${person.id}</span>
-						</div>
+				<form>
+					<div class="clearfix">
+						<label><strong>Created:</strong></label>
+						<label class="text">${file.createdDate}</label>
 					</div>
-					<div class="control-group">
-						<label class="control-label">Display Name:</label>
-						<div class="controls">
-							<span class="uneditable-input input-xxlarge">${person.displayName}</span>
-						</div>
-					</div>
-					<div class="control-group">
-						<label class="control-label">Gender:</label>
-						<div class="controls">
-							<span class="uneditable-input input-xxlarge">${person.gender}</span>
-						</div>
-					</div>
-					<div class="control-group">
-						<label class="control-label">About Me:</label>
-						<div class="controls">
-							<span class="uneditable-input input-xxlarge">${person.aboutMe}</span>
-						</div>
-					</div>
-					<div class="control-group">
-						<label class="control-label">Relationship Status:</label>
-						<div class="controls">
-							<span class="uneditable-input input-xxlarge">${person.relationshipStatus}</span>
-						</div>
+					<div class="clearfix">
+						<label><strong>Last modified:</strong></label>
+						<label class="text">${file.modifiedDate} by ${file.lastModifyingUserName}</label>
 					</div>
 				</form>
 			</div>
 			<div class="span4 columns">
-				<div>Profile Picture</div>
-				<img src="${person.imageUrl}" />
+				<a href="https://docs.google.com/spreadsheet/ccc?key=${file.id}" target="_blank">Edit Spreadsheet</a>
 			</div>
+			<div class="span4 columns">
+				<a href="${pageContext.request.contextPath}/downloadfile/${file.title}.xlsx?fileId=${file.id}" target="_blank" class="button" title="Download HRM">Download HRM</a>
+			</div>
+			<!--
+			<div class="span4 columns">
+				<img src="${file.thumbnailLink}" />
+			</div>
+			-->
 			<div class="clear"></div>
-			<div>
-				<h5>URLs</h5>
-				<ul>
-					<c:forEach items="${person.urls}" var="url">
-						<li><a href="${url.key}">${url.key}</a> ${url.value}</li>
-					</c:forEach>
-				</ul>
-			</div>
-			<div>
-				<h5>Organizations</h5>
-				<ul>
-					<c:forEach items="${person.organizations}" var="organization">
-						<li>${organization}</li>
-					</c:forEach>
-				</ul>
-			</div>
-			<div>
-				<h5>Places Lived</h5>
-				<ul>
-					<c:forEach items="${person.placesLived}" var="place">
-						<li>${place.key}</li>
-					</c:forEach>
-				</ul>
-			</div>
 		</c:if>
-		<c:if test="${empty person and not empty param.id}">
-			<div>No profile was found for the provided ID</div>
+		<c:if test="${empty file and not empty param.fileId}">
+			<div>The specified file could not be found</div>
 		</c:if>
 	</div>
 </body>

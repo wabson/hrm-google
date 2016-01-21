@@ -223,6 +223,33 @@ public class HomeController {
 		return new ModelAndView("redirect:/", "list", command.getList());
 	}
 	
+	@RequestMapping(value="{hrmType}/{fileId}", method=GET)
+	public ModelAndView sheetDetails(@PathVariable String hrmType, @PathVariable String fileId) {
+
+		DriveOperations driveOperations = google.driveOperations();
+
+		DriveFile file = driveOperations.getFile(fileId);
+		String fileTitle = file.getTitle();
+
+		// Copy HRM type if defined in custom properties
+		List<FileProperty> fps = driveOperations.getProperties(fileId);
+		for (FileProperty fp : fps) {
+			if (fp.getKey().equals("hrmType")) {
+				//driveOperations.addProperty(file.getId(), fp);
+				hrmType = fp.getValue();
+			}
+		}
+
+		WorksheetForm form = new WorksheetForm();
+		form.setType(hrmType);
+		return new ModelAndView("drivefile", "command", form)
+			.addObject("selected", hrmType.toLowerCase()) // Ensures nav context is shown correctly
+			.addObject("fileId", fileId)
+			.addObject("file", file)
+			.addObject("title", fileTitle)
+			.addObject("hrmType", hrmType.toUpperCase()); // For labels
+	}
+
 	/*
 	@RequestMapping(value="workbook", method=POST, params="parent")
 	public ModelAndView createTask(String parent, String previous, WorksheetForm command, BindingResult result) {
