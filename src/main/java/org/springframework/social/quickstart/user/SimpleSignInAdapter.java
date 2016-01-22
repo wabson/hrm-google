@@ -35,8 +35,13 @@ public final class SimpleSignInAdapter implements SignInAdapter {
 	
 	public String signIn(String userId, Connection<?> connection, NativeWebRequest request) {
 		SecurityContext.setCurrentUser(new User(userId));
+		String previousUrl = userCookieGenerator.readUrlHistoryCookieValue(request.getNativeRequest(HttpServletRequest.class));
 		userCookieGenerator.addCookie(userId, request.getNativeResponse(HttpServletResponse.class));
-		return null;
+		if (previousUrl != null && !previousUrl.startsWith("/sign")) {
+			return previousUrl;
+		} else {
+			return null;
+		}
 	}
 
 }
