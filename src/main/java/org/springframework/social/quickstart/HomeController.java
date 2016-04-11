@@ -717,6 +717,7 @@ public class HomeController {
 					thisCol.unsetCustomWidth();
 				}
 			}
+			sheet.setColumnHidden(c, sheet.isColumnHidden(c+1));
 		}
 	}
 
