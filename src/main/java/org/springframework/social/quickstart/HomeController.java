@@ -517,6 +517,10 @@ public class HomeController {
 									if (columnsToRemove.indexOf(colName) >= 0) {
 										headerCellsToRemove.add(cell);
 									}
+									// For Nationals rename Posn header to be compliant with NRM
+									if (colName.equals("Posn") && fileType.equals(HRM_TYPE_NATIONALS)) {
+										cell.setCellValue("Pos");
+									}
 								} catch(IllegalStateException e) {
 									// We encountered a non-string value, move on
 								}
