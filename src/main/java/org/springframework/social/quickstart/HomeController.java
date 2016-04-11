@@ -578,7 +578,7 @@ public class HomeController {
 				// Use setHeader as setContentType adds on a text encoding, which confuses Chome
 				response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 				//response.setCharacterEncoding("binary");
-				response.setHeader("Content-Disposition","attachment;filename=" + file.getTitle() + ".xlsx");
+				response.setHeader("Content-Disposition","attachment;filename=\"" + file.getTitle() + ".xlsx\"");
 				//response.setContentLength((int) entity.getContentLength());
 				response.setHeader("Content-Length", "" + exportFile.length());
 				OutputStream outputStream = response.getOutputStream();
