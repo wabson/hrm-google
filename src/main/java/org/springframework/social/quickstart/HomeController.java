@@ -65,6 +65,7 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ObjectNode;
 import org.openxmlformats.schemas.officeDocument.x2006.customProperties.CTProperty;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTCol;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.social.ExpiredAuthorizationException;
 import org.springframework.social.google.api.Google;
@@ -706,8 +707,16 @@ public class HomeController {
 
 
 		// Adjust the column widths
-		for ( int c=0; c < maxColumn; c++ ){
-			sheet.setColumnWidth( c, sheet.getColumnWidth(c+1) );
+		for ( int c=columnToDelete; c < maxColumn; c++ ) {
+			CTCol thisCol = sheet.getColumnHelper().getColumn(c, false),
+					nextCol = sheet.getColumnHelper().getColumn(c+1, false);
+			if (nextCol != null) {
+				if (nextCol.isSetCustomWidth()) {
+					sheet.setColumnWidth(c, sheet.getColumnWidth(c+1));
+				} else {
+					thisCol.unsetCustomWidth();
+				}
+			}
 		}
 	}
 
