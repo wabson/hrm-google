@@ -82,7 +82,12 @@ public final class UserInterceptor extends HandlerInterceptorAdapter {
 	private boolean requireSignIn(HttpServletRequest request, HttpServletResponse response) throws Exception {
 		String redirectPath = request.getRequestURI().replaceAll(request.getContextPath(), "");
 		userCookieGenerator.addUrlHistoryCookie(redirectPath, response);
-		new RedirectView("/signin", true).render(null, request, response);
+		String loginHint = request.getParameter("login");
+		String signinPath = "/signin";
+		if (loginHint != null) {
+			signinPath += "?login=" + loginHint;
+		}
+		new RedirectView(signinPath, true).render(null, request, response);
 		return false;
 	}
 

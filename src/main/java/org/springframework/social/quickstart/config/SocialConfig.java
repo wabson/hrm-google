@@ -32,6 +32,7 @@ import org.springframework.social.connect.UsersConnectionRepository;
 import org.springframework.social.connect.jdbc.JdbcUsersConnectionRepository;
 import org.springframework.social.connect.support.ConnectionFactoryRegistry;
 import org.springframework.social.connect.web.ProviderSignInController;
+import org.springframework.social.quickstart.user.IncludeEmailProviderSignInInterceptor;
 import org.springframework.social.quickstart.user.SecurityContext;
 import org.springframework.social.quickstart.user.SimpleConnectionSignUp;
 import org.springframework.social.quickstart.user.SimpleSignInAdapter;
@@ -100,8 +101,10 @@ public class SocialConfig {
 	 */
 	@Bean
 	public ProviderSignInController providerSignInController() {
-		return new ProviderSignInController(connectionFactoryLocator(), usersConnectionRepository(),
+		ProviderSignInController controller = new ProviderSignInController(connectionFactoryLocator(), usersConnectionRepository(),
 				new SimpleSignInAdapter());
+		controller.addSignInInterceptor(new IncludeEmailProviderSignInInterceptor());
+		return controller;
 	}
 
 }
