@@ -515,12 +515,14 @@ public class HomeController {
 							if (cell != null) {
 								try {
 									String colName = cell.getStringCellValue();
-									if (columnsToRemove.indexOf(colName) >= 0) {
-										headerCellsToRemove.add(cell);
-									}
-									// For Nationals rename Posn header to be compliant with NRM
-									if (colName.equals("Posn") && fileType.equals(HRM_TYPE_NATIONALS)) {
-										cell.setCellValue("Pos");
+									if (colName != null) {
+										if (columnsToRemove.indexOf(colName) >= 0) {
+											headerCellsToRemove.add(cell);
+										}
+										// For Nationals rename Posn header to be compliant with NRM
+										if (colName.equals("Posn") && fileType.equals(HRM_TYPE_NATIONALS)) {
+											cell.setCellValue("Pos");
+										}
 									}
 								} catch(IllegalStateException e) {
 									// We encountered a non-string value, move on
