@@ -520,7 +520,7 @@ public class HomeController {
 											headerCellsToRemove.add(cell);
 										}
 										// For Nationals rename Posn header to be compliant with NRM
-										if (colName.equals("Posn") && fileType.equals(HRM_TYPE_NATIONALS)) {
+										if (colName.equals("Posn") && HRM_TYPE_NATIONALS.equals(fileType)) {
 											cell.setCellValue("Pos");
 										}
 									}
