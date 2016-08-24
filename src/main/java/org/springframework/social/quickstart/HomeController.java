@@ -92,7 +92,7 @@ public class HomeController {
 
 	private final Google google;
 
-	private static final double HRM_VERSION = 12.0;
+	private static final double HRM_VERSION = 12.2;
 	private static final String HRM_TYPE_HASLER = "HRM";
 	private static final String HRM_TYPE_NATIONALS = "NRM";
 	private static final String HRM_TYPE_ASSESSMENT = "ARM";
