@@ -81,7 +81,9 @@ public final class UserInterceptor extends HandlerInterceptorAdapter {
 	
 	private boolean requireSignIn(HttpServletRequest request, HttpServletResponse response) throws Exception {
 		String redirectPath = request.getRequestURI().replaceAll(request.getContextPath(), "");
-		userCookieGenerator.addUrlHistoryCookie(redirectPath, response);
+		if (!redirectPath.endsWith("favicon.ico")) {
+			userCookieGenerator.addUrlHistoryCookie(redirectPath, response);
+		}
 		String loginHint = request.getParameter("login");
 		String signinPath = "/signin";
 		if (loginHint != null) {
