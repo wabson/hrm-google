@@ -104,6 +104,14 @@ public class HomeController {
 	private static final String SHEET_CLUBS = "Clubs";
 	private static final String SHEET_RESULTS = "Results";
 	private static final String SHEET_SUMMARY = "Summary";
+	private static final String SHEET_MEMBERSHIPS = "Memberships";
+	private static final String SHEET_ENTRY_SETS = "Entry Sets";
+
+	private static final String COLUMN_SET = "Set";
+	private static final String COLUMN_DUE = "Due";
+	private static final String COLUMN_FEE = "Fee";
+	private static final String COLUMN_PAID = "Paid";
+	private static final String COLUMN_NOTES = "Notes";
 
 	private static Pattern numberPattern = Pattern.compile("\\d+");
 	private static Pattern timePattern = Pattern.compile("(\\d{1,2}):(\\d{2}):(\\d{2})");
@@ -435,8 +443,9 @@ public class HomeController {
 
 				List<String> raceSheetNames = new ArrayList<String>();
 				List<String> columnsToRemove = new ArrayList<String>();
-				columnsToRemove.add("Due");
-				columnsToRemove.add("Fee");
+				columnsToRemove.add(COLUMN_DUE);
+				columnsToRemove.add(COLUMN_FEE);
+				columnsToRemove.add(COLUMN_SET);
 				// Go through sheets
 				boolean isRaceSheet = true;
 				for (int i = 0; i < numSheets; i++) {
@@ -466,43 +475,45 @@ public class HomeController {
 						int rowEnd = sheet.getLastRowNum() + 1;
 						for (int rowNum = rowStart; rowNum < rowEnd; rowNum++) {
 							Row r = sheet.getRow(rowNum);
-							short colStart = r.getFirstCellNum();
-							short colEnd = r.getLastCellNum();
-							for (short cn = colStart; cn < colEnd; cn++) {
-								Cell c = r.getCell(cn, Row.RETURN_NULL_AND_BLANK);
-								if (c != null) {
-									Cell headerCell = headerRow.getCell(cn, Row.RETURN_BLANK_AS_NULL);
-									String colName = "";
-									if (headerCell != null) {
-										try {
-											colName = headerCell.getStringCellValue();
-										} catch(IllegalStateException e) {
-											// We encountered a non-string value, move on
-										}
-										if ("Paid".equals(colName)) {
-											c.setCellType(Cell.CELL_TYPE_BLANK);
-										}
-										if ("Notes".equals(colName) && !c.getStringCellValue().equals("ill")) {
-											c.setCellType(Cell.CELL_TYPE_BLANK);
-										}
-									}
-									if (c.getCellType() == Cell.CELL_TYPE_FORMULA) {
-										c.setCellFormula(null);
-										// Numeric values set as strings without this
-										setNumericValue(c);
-									}
-									c.removeCellComment();
-									if (isRaceSheet) {
-										if (cn > 0) {
-											if ("Expiry".equals(colName) && c.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-												c.setCellStyle(dateStyle);
-											} else if ((("Time+/-".equals(colName) || "Start".equals(colName) || "Finish".equals(colName) || "Elapsed".equals(colName))) && c.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-												c.setCellStyle(timeStyle);
-											} else {
-												c.setCellStyle(bodyStyle);
+							if (r != null) {
+								short colStart = r.getFirstCellNum();
+								short colEnd = r.getLastCellNum();
+								for (short cn = colStart; cn < colEnd; cn++) {
+									Cell c = r.getCell(cn, Row.RETURN_NULL_AND_BLANK);
+									if (c != null) {
+										Cell headerCell = headerRow.getCell(cn, Row.RETURN_BLANK_AS_NULL);
+										String colName = "";
+										if (headerCell != null) {
+											try {
+												colName = headerCell.getStringCellValue();
+											} catch(IllegalStateException e) {
+												// We encountered a non-string value, move on
 											}
-										} else {
-											c.setCellStyle(firstColumnStyle);
+											if (COLUMN_PAID.equals(colName)) {
+												c.setCellType(Cell.CELL_TYPE_BLANK);
+											}
+											if (COLUMN_NOTES.equals(colName) && !c.getStringCellValue().equals("ill")) {
+												c.setCellType(Cell.CELL_TYPE_BLANK);
+											}
+										}
+										if (c.getCellType() == Cell.CELL_TYPE_FORMULA) {
+											c.setCellFormula(null);
+											// Numeric values set as strings without this
+											setNumericValue(c);
+										}
+										c.removeCellComment();
+										if (isRaceSheet) {
+											if (cn > 0) {
+												if ("Expiry".equals(colName) && c.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+													c.setCellStyle(dateStyle);
+												} else if ((("Time+/-".equals(colName) || "Start".equals(colName) || "Finish".equals(colName) || "Elapsed".equals(colName))) && c.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+													c.setCellStyle(timeStyle);
+												} else {
+													c.setCellStyle(bodyStyle);
+												}
+											} else {
+												c.setCellStyle(firstColumnStyle);
+											}
 										}
 									}
 								}
@@ -558,7 +569,7 @@ public class HomeController {
 				setHRMRaceInfo(wb, hrmRaceName, hrmRegion);
 
 				// Remove any sheets which should not be present for the official HRM
-				String[] disallowedSheets = { SHEET_STARTS, "Sheet1" };
+				String[] disallowedSheets = { SHEET_STARTS, SHEET_ENTRY_SETS, SHEET_MEMBERSHIPS, "Sheet1" };
 				for (int i = 0; i < disallowedSheets.length; i++) {
 					int sheetIndex = wb.getSheetIndex(disallowedSheets[i]);
 					if (sheetIndex > -1) {
@@ -633,11 +644,13 @@ public class HomeController {
 		for (Row row : startsSheet) {
 			Cell raceNameCell = row.getCell(0);
 			Cell startTimeCell = row.getCell(1);
-			setNumericValue(startTimeCell);
-			if (raceNameCell != null && startTimeCell != null &&
-					raceNameCell.getCellType() == Cell.CELL_TYPE_STRING &&
-					startTimeCell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-				times.put(raceNameCell.getStringCellValue(), startTimeCell.getNumericCellValue());
+			if (raceNameCell != null && startTimeCell != null) {
+				setNumericValue(startTimeCell);
+				if (raceNameCell != null && startTimeCell != null &&
+						raceNameCell.getCellType() == Cell.CELL_TYPE_STRING &&
+						startTimeCell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+					times.put(raceNameCell.getStringCellValue(), startTimeCell.getNumericCellValue());
+				}
 			}
 		}
 		return times;
