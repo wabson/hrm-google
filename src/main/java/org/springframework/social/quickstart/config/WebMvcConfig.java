@@ -15,6 +15,8 @@
  */
 package org.springframework.social.quickstart.config;
 
+import java.io.IOException;
+
 import javax.inject.Inject;
 
 import org.springframework.context.annotation.Bean;
@@ -61,6 +63,14 @@ public class WebMvcConfig extends WebMvcConfigurerAdapter {
 	@Override
 	public void configureDefaultServletHandling(DefaultServletHandlerConfigurer configurer) {
 		configurer.enable();
+	}
+
+	@Bean(name = "multipartResolver")
+	public CommonsMultipartResolver getResolver() throws IOException {
+		CommonsMultipartResolver resolver = new CommonsMultipartResolver();
+		// no limit
+		resolver.setMaxUploadSize(10*1024*1024);
+	return resolver;
 	}
 
 	@Bean

@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.http.HttpEntity;
@@ -84,13 +85,19 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 @Controller
 public class HomeController {
 
 	private final Google google;
+
+	@Autowired
+	ServletContext context;
 
 	private static final double HRM_VERSION = 12.5;
 	private static final String HRM_TYPE_HASLER = "HRM";
@@ -587,30 +594,67 @@ public class HomeController {
 				eos.close();
 
 				// Serve up the file
+				streamFileToResponse(exportFile, file.getTitle(), response);
 
-				InputStream eis = new FileInputStream(exportFile);
-				// Use setHeader as setContentType adds on a text encoding, which confuses Chome
-				response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-				//response.setCharacterEncoding("binary");
-				response.setHeader("Content-Disposition","attachment;filename=\"" + file.getTitle() + ".xlsx\"");
-				//response.setContentLength((int) entity.getContentLength());
-				response.setHeader("Content-Length", "" + exportFile.length());
-				OutputStream outputStream = response.getOutputStream();
-				try {
-					byte[] buffer = new byte[1024]; // Adjust if you want
-					int bytesRead;
-					while ((bytesRead = eis.read(buffer)) != -1)
-					{
-						outputStream.write(buffer, 0, bytesRead);
-					}
-				} finally {
-					eis.close();
-				}
 			} else {
 				throw new Exception("Response entity is null!");
 			}
 		} else {
 			throw new Exception("No Excel export found!");
+		}
+	}
+	
+	private void streamFileToResponse(final File inputFile, String fileName, HttpServletResponse response) throws IOException {
+		InputStream eis = new FileInputStream(inputFile);
+		// Use setHeader as setContentType adds on a text encoding, which confuses Chome
+		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+		//response.setCharacterEncoding("binary");
+		response.setHeader("Content-Disposition","attachment;filename=\"" + fileName + ".xlsx\"");
+		//response.setContentLength((int) entity.getContentLength());
+		response.setHeader("Content-Length", "" + inputFile.length());
+		OutputStream outputStream = response.getOutputStream();
+		try {
+			byte[] buffer = new byte[1024]; // Adjust if you want
+			int bytesRead;
+			while ((bytesRead = eis.read(buffer)) != -1)
+			{
+				outputStream.write(buffer, 0, bytesRead);
+			}
+		} finally {
+			eis.close();
+		}
+	}
+
+	@RequestMapping(value = "/public/upload", method = RequestMethod.POST)
+	public void upload(@RequestParam("file") List<MultipartFile> files,
+			HttpServletResponse response) {
+		if (!files.isEmpty()) {
+			response.setStatus(200);
+			try {
+				MultipartFile uploadedFile = files.get(0);
+				final File temp = File.createTempFile("hrmupload-", ".xlsx");
+				uploadedFile.transferTo(temp);
+				OPCPackage pkg = OPCPackage.open(temp);
+				XSSFWorkbook wb = new XSSFWorkbook(pkg);
+				wb.setWorkbookPassword(null, null);
+				wb.unLock();
+
+				final File exportFile = File.createTempFile("hrmimport-",
+						".xlsx");
+				OutputStream eos = new FileOutputStream(exportFile);
+				wb.write(eos);
+				eos.close();
+				wb.close();
+
+				streamFileToResponse(exportFile, uploadedFile.getName(),
+						response);
+
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+			}
+
+		} else {
+			response.setStatus(400);
 		}
 	}
 
@@ -766,6 +810,35 @@ public class HomeController {
 		}
 
 		cNew.setCellStyle( cOld.getCellStyle() );
+
+	}
+
+	private class FileInfo {
+
+		private String name;
+		private String path;
+
+		public FileInfo(String name, String path) {
+			super();
+			this.name = name;
+			this.path = path;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public String getPath() {
+			return path;
+		}
+
+		public void setPath(String path) {
+			this.path = path;
+		}
 
 	}
 }
