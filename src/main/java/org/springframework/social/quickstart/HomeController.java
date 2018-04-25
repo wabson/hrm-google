@@ -99,7 +99,7 @@ public class HomeController {
 	@Autowired
 	ServletContext context;
 
-	private static final double HRM_VERSION = 12.5;
+	private static final double HRM_VERSION = 12.8;
 	private static final String HRM_TYPE_HASLER = "HRM";
 	private static final String HRM_TYPE_NATIONALS = "NRM";
 	private static final String HRM_TYPE_ASSESSMENT = "ARM";
