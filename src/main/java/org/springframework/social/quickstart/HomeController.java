@@ -113,6 +113,7 @@ public class HomeController {
 	private static final String SHEET_SUMMARY = "Summary";
 	private static final String SHEET_MEMBERSHIPS = "Memberships";
 	private static final String SHEET_ENTRY_SETS = "Entry Sets";
+	private static final String SHEET_RACES = "Races";
 
 	private static final String COLUMN_SET = "Set";
 	private static final String COLUMN_DUE = "Due";
@@ -122,6 +123,9 @@ public class HomeController {
 
 	private static Pattern numberPattern = Pattern.compile("\\d+");
 	private static Pattern timePattern = Pattern.compile("(\\d{1,2}):(\\d{2}):(\\d{2})");
+
+	// List of sheets which should not be present for the official HRM
+	private static final String[] disallowedSheets = { SHEET_STARTS, SHEET_ENTRY_SETS, SHEET_MEMBERSHIPS, SHEET_RACES, "Sheet1" };
 
 	@Autowired
 	public HomeController(Google google) {
@@ -575,8 +579,6 @@ public class HomeController {
 				}
 				setHRMRaceInfo(wb, hrmRaceName, hrmRegion);
 
-				// Remove any sheets which should not be present for the official HRM
-				String[] disallowedSheets = { SHEET_STARTS, SHEET_ENTRY_SETS, SHEET_MEMBERSHIPS, "Sheet1" };
 				for (int i = 0; i < disallowedSheets.length; i++) {
 					int sheetIndex = wb.getSheetIndex(disallowedSheets[i]);
 					if (sheetIndex > -1) {
