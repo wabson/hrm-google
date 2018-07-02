@@ -789,7 +789,7 @@ public class HomeController {
 			if (nextCol != null) {
 				if (nextCol.isSetCustomWidth()) {
 					sheet.setColumnWidth(c, sheet.getColumnWidth(c+1));
-				} else {
+				} else if (thisCol.isSetCustomWidth()) {
 					thisCol.unsetCustomWidth();
 				}
 			}
