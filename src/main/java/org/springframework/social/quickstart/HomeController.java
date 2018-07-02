@@ -457,6 +457,8 @@ public class HomeController {
 				columnsToRemove.add(COLUMN_DUE);
 				columnsToRemove.add(COLUMN_FEE);
 				columnsToRemove.add(COLUMN_SET);
+				columnsToRemove.add("Chip Finish");
+				columnsToRemove.add("Manual Finish");
 				columnsToRemove.add("In Region");
 				columnsToRemove.add("Boat in Region");
 				columnsToRemove.add("Allowed Points");
