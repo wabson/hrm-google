@@ -672,7 +672,7 @@ public class HomeController {
 	}
 
 	private static void setNumericValue(Cell c) {
-		if (c.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+		if (c.getCellType() == Cell.CELL_TYPE_NUMERIC && c.getCellType() == Cell.CELL_TYPE_BOOLEAN) {
 			return;
 		}
 		if (numberPattern.matcher(c.getStringCellValue()).matches()) {
