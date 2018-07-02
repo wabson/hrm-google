@@ -675,20 +675,24 @@ public class HomeController {
 		if (c.getCellType() == Cell.CELL_TYPE_NUMERIC && c.getCellType() == Cell.CELL_TYPE_BOOLEAN) {
 			return;
 		}
-		if (numberPattern.matcher(c.getStringCellValue()).matches()) {
-			c.setCellValue(Double.parseDouble(c.getStringCellValue()));
-			c.setCellType(Cell.CELL_TYPE_NUMERIC);
-		} else {
-			Matcher timeMatcher = timePattern.matcher(c.getStringCellValue());
-			if (timeMatcher.matches()) {
-				Calendar calendar = Calendar.getInstance();
-				calendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(timeMatcher.group(1)));
-				calendar.set(Calendar.MINUTE, Integer.parseInt(timeMatcher.group(2)));
-				calendar.set(Calendar.SECOND, Integer.parseInt(timeMatcher.group(3)));
-				calendar.set(Calendar.MILLISECOND, 0);
-				c.setCellValue(calendar);
+		try {
+			if (numberPattern.matcher(c.getStringCellValue()).matches()) {
+				c.setCellValue(Double.parseDouble(c.getStringCellValue()));
 				c.setCellType(Cell.CELL_TYPE_NUMERIC);
+			} else {
+				Matcher timeMatcher = timePattern.matcher(c.getStringCellValue());
+				if (timeMatcher.matches()) {
+					Calendar calendar = Calendar.getInstance();
+					calendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(timeMatcher.group(1)));
+					calendar.set(Calendar.MINUTE, Integer.parseInt(timeMatcher.group(2)));
+					calendar.set(Calendar.SECOND, Integer.parseInt(timeMatcher.group(3)));
+					calendar.set(Calendar.MILLISECOND, 0);
+					c.setCellValue(calendar);
+					c.setCellType(Cell.CELL_TYPE_NUMERIC);
+				}
 			}
+		} catch (IllegalStateException e) {
+			
 		}
 	}
 
