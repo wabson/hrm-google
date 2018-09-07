@@ -621,7 +621,7 @@ public class HomeController {
 				eos.close();
 
 				// Serve up the file
-				streamFileToResponse(exportFile, file.getTitle(), response);
+				streamFileToResponse(exportFile, file.getTitle() + ".xlsx", response);
 
 			} else {
 				throw new Exception("Response entity is null!");
@@ -631,13 +631,35 @@ public class HomeController {
 		}
 	}
 	
+	private List<String> getColumnNames(XSSFSheet sheet) {
+		List<String> columnNames = new ArrayList<String>();
+		Row headerRow = sheet.getRow(0);
+		if (headerRow != null) {
+			short colStart = headerRow.getFirstCellNum();
+			short colEnd = headerRow.getLastCellNum();
+			for (short cn = colStart; cn < colEnd; cn++) {
+				Cell c = headerRow.getCell(cn, Row.RETURN_NULL_AND_BLANK);
+				String colName = null;
+				if (c != null) {
+					Cell headerCell = headerRow.getCell(cn, Row.RETURN_BLANK_AS_NULL);
+					if (headerCell != null) {
+						try {
+							colName = headerCell.getStringCellValue();
+						} catch(IllegalStateException e) {
+							// We encountered a non-string value, move on
+						}
+					}
+				}
+				columnNames.add(colName);
+			}
+		}
+		return columnNames;
+	}
+	
 	private void streamFileToResponse(final File inputFile, String fileName, HttpServletResponse response) throws IOException {
 		InputStream eis = new FileInputStream(inputFile);
-		// Use setHeader as setContentType adds on a text encoding, which confuses Chome
 		response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-		//response.setCharacterEncoding("binary");
-		response.setHeader("Content-Disposition","attachment;filename=\"" + fileName + ".xlsx\"");
-		//response.setContentLength((int) entity.getContentLength());
+		response.setHeader("Content-Disposition","attachment;filename=\"" + fileName + "\"");
 		response.setHeader("Content-Length", "" + inputFile.length());
 		OutputStream outputStream = response.getOutputStream();
 		try {
@@ -682,7 +704,7 @@ public class HomeController {
 				wb.setWorkbookPassword(null, null);
 				wb.unLock();
 
-				final File exportFile = File.createTempFile("hrmimport-",
+				final File exportFile = File.createTempFile("hrmupload-",
 						".xlsx");
 				OutputStream eos = new FileOutputStream(exportFile);
 				wb.write(eos);
