@@ -576,7 +576,8 @@ public class HomeController {
 							}
 						}
 						for (Cell cell : headerCellsToRemove) {
-							removeSheetColumn(sheet, cell.getColumnIndex());
+							int columnIndex = getColumnNames(sheet).indexOf(cell.getStringCellValue());
+							removeSheetColumn(sheet, columnIndex);
 						}
 					}
 					// Remove data validation from the sheet
