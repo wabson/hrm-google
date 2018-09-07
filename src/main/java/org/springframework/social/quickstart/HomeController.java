@@ -51,6 +51,7 @@ import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
@@ -99,10 +100,12 @@ public class HomeController {
 	@Autowired
 	ServletContext context;
 
-	private static final double HRM_VERSION = 12.8;
+	private static final double HRM_VERSION_DEFAULT = 13.1;
 	private static final String HRM_TYPE_HASLER = "HRM";
 	private static final String HRM_TYPE_NATIONALS = "NRM";
 	private static final String HRM_TYPE_ASSESSMENT = "ARM";
+
+	private static final String HRM_REGION_DEFAULT = "ALL";
 
 	private static final String PROP_FMTID = "{D5CDD505-2E9C-101B-9397-08002B2CF9AE}";
 
@@ -120,6 +123,11 @@ public class HomeController {
 	private static final String COLUMN_FEE = "Fee";
 	private static final String COLUMN_PAID = "Paid";
 	private static final String COLUMN_NOTES = "Notes";
+
+	private static final String DRIVE_PROP_HRM_REGION = "hrmRegion";
+	private static final String DRIVE_PROP_HRM_RACE_NAME = "hrmRaceName";
+	private static final String DRIVE_PROP_HRM_VERSION = "hrmVersion";
+	private static final String DRIVE_PROP_HRM_TYPE = "hrmType";
 
 	private static Pattern numberPattern = Pattern.compile("\\d+");
 	private static Pattern timePattern = Pattern.compile("(\\d{1,2}):(\\d{2}):(\\d{2})");
@@ -344,14 +352,31 @@ public class HomeController {
 		}
 		DriveOperations driveOperations = google.driveOperations();
 		List<FileProperty> driveProps = driveOperations.getProperties(file.getId());
-		String hrmRegion = "LS";
+		String hrmFileType = null;
+		double hrmVersion = HRM_VERSION_DEFAULT;
+		String hrmRegion = HRM_REGION_DEFAULT;
 		String hrmRaceName = file.getTitle();
+		String propertyKey, propertyValue;
 		for (FileProperty fileProperty : driveProps) {
-			if (fileProperty.getKey().equals("hrmRegion")) {
-				hrmRegion = fileProperty.getValue();
-			}
-			if (fileProperty.getKey().equals("hrmRaceName")) {
-				hrmRaceName = fileProperty.getValue();
+			propertyKey = fileProperty.getKey();
+			propertyValue = fileProperty.getValue();
+			if (propertyKey != null && propertyValue != null)
+			{
+				if (propertyKey.equals(DRIVE_PROP_HRM_REGION)) {
+					hrmRegion = fileProperty.getValue();
+				}
+				if (propertyKey.equals(DRIVE_PROP_HRM_RACE_NAME)) {
+					hrmRaceName = fileProperty.getValue();
+				}
+				if (propertyKey.equals(DRIVE_PROP_HRM_TYPE)) {
+					hrmFileType = fileProperty.getValue();
+				}
+				if (propertyKey.equals(DRIVE_PROP_HRM_VERSION)) {
+					try {
+						hrmVersion = Double.parseDouble(fileProperty.getValue());
+					} catch (NumberFormatException e) {
+					}
+				}
 			}
 		}
 		String exportUri = file.getExportLinks().get("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
@@ -380,9 +405,6 @@ public class HomeController {
 				}
 				tos.close();
 
-				String fileType = null;
-				double hrmVersion = HRM_VERSION;
-
 				// Modify the .xlsx file using POI
 				// TODO Refactor this all into a helper class
 
@@ -390,28 +412,18 @@ public class HomeController {
 				XSSFWorkbook wb = new XSSFWorkbook(pkg);
 				CreationHelper createHelper = wb.getCreationHelper();
 
-				int numSheets = wb.getNumberOfSheets();
-
-				// Auto-detect the sheet type based on the first sheet name
-				if (numSheets > 0) {
-					String firstSheetName = wb.getSheetAt(0).getSheetName();
-					if (firstSheetName.equals("Div1")) {
-						fileType = HRM_TYPE_HASLER;
-					} else if (firstSheetName.equals("SMK1")) {
-						fileType = HRM_TYPE_ASSESSMENT;
-					} else if (firstSheetName.equals("Div7") || firstSheetName.equals("U12 M")) {
-						fileType = HRM_TYPE_NATIONALS;
-					}
+				if (hrmFileType == null) {
+					hrmFileType = autoDetectHRMType(wb);
 				}
 
 				// Write properties
 				POIXMLProperties props = wb.getProperties();
 				POIXMLProperties.CustomProperties cust =  props.getCustomProperties();
 
-				if (fileType != null) {
+				if (hrmFileType != null) {
 					CTProperty hrmProperty = cust.getUnderlyingProperties().addNewProperty();
 					hrmProperty.setBool(true);
-					hrmProperty.setName(fileType);
+					hrmProperty.setName(hrmFileType);
 					hrmProperty.setFmtid(PROP_FMTID);
 					hrmProperty.setPid(2);
 				}
@@ -422,7 +434,7 @@ public class HomeController {
 				versionProperty.setFmtid(PROP_FMTID);
 				versionProperty.setPid(3);
 
-				String sheetPassword = fileType;
+				String sheetPassword = hrmFileType;
 				XSSFSheet sheet;
 				String sheetName;
 
@@ -470,6 +482,7 @@ public class HomeController {
 				columnsToRemove.add("DDiv");
 				// Go through sheets
 				boolean isRaceSheet = true;
+				int numSheets = wb.getNumberOfSheets();
 				for (int i = 0; i < numSheets; i++) {
 					sheet = wb.getSheetAt(i);
 					sheetName = sheet.getSheetName();
@@ -553,7 +566,7 @@ public class HomeController {
 											headerCellsToRemove.add(cell);
 										}
 										// For Nationals rename Posn header to be compliant with NRM
-										if (colName.equals("Posn") && HRM_TYPE_NATIONALS.equals(fileType)) {
+										if (colName.equals("Posn") && HRM_TYPE_NATIONALS.equals(hrmFileType)) {
 											cell.setCellValue("Pos");
 										}
 									}
@@ -636,6 +649,22 @@ public class HomeController {
 		} finally {
 			eis.close();
 		}
+	}
+
+	private static String autoDetectHRMType(Workbook wb) {
+		// Auto-detect the sheet type based on the first sheet name
+		String hrmFileType = null;
+		if (wb.getNumberOfSheets() > 0) {
+			String firstSheetName = wb.getSheetAt(0).getSheetName();
+			if (firstSheetName.equals("Div1")) {
+				hrmFileType = HRM_TYPE_HASLER;
+			} else if (firstSheetName.equals("SMK1")) {
+				hrmFileType = HRM_TYPE_ASSESSMENT;
+			} else if (firstSheetName.equals("Div7") || firstSheetName.equals("U12 M")) {
+				hrmFileType = HRM_TYPE_NATIONALS;
+			}
+		}
+		return hrmFileType;
 	}
 
 	@RequestMapping(value = "/public/upload", method = RequestMethod.POST)
