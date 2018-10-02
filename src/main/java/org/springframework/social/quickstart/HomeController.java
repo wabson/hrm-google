@@ -133,7 +133,7 @@ public class HomeController {
 	private static Pattern timePattern = Pattern.compile("(\\d{1,2}):(\\d{2}):(\\d{2})");
 
 	// List of sheets which should not be present for the official HRM
-	private static final String[] disallowedSheets = { SHEET_STARTS, SHEET_ENTRY_SETS, SHEET_MEMBERSHIPS, SHEET_RACES, "Sheet1", "Courses", "Race Times", "Chip Finishes", "Hasler Points", "Lightning Points" };
+	private static final String[] disallowedSheets = { SHEET_STARTS, SHEET_ENTRY_SETS, SHEET_MEMBERSHIPS, SHEET_RACES, "Sheet1", "Courses", "Race Times", "Chip Finishes", "Hasler Points", "Lightning Points", "Entry Fees" };
 
 	@Autowired
 	public HomeController(Google google) {
@@ -469,6 +469,7 @@ public class HomeController {
 				columnsToRemove.add(COLUMN_DUE);
 				columnsToRemove.add(COLUMN_FEE);
 				columnsToRemove.add(COLUMN_SET);
+				columnsToRemove.add("Late?");
 				columnsToRemove.add("Chip Finish");
 				columnsToRemove.add("Manual Finish");
 				columnsToRemove.add("In Region");
@@ -478,6 +479,7 @@ public class HomeController {
 				columnsToRemove.add("Regional Posn");
 				columnsToRemove.add("Regional Points");
 				columnsToRemove.add("Individual Points");
+				columnsToRemove.add("Individual Posn");
 				columnsToRemove.add("PDiv");
 				columnsToRemove.add("DDiv");
 				// Go through sheets
