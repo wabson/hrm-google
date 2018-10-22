@@ -52,6 +52,7 @@ import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
@@ -705,6 +706,37 @@ public class HomeController {
 				XSSFWorkbook wb = new XSSFWorkbook(pkg);
 				wb.setWorkbookPassword(null, null);
 				wb.unLock();
+
+				final File exportFile = File.createTempFile("hrmupload-",
+						".xlsx");
+				OutputStream eos = new FileOutputStream(exportFile);
+				wb.write(eos);
+				eos.close();
+				wb.close();
+
+				streamFileToResponse(exportFile, uploadedFile.getName(),
+						response);
+
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+			}
+
+		} else {
+			response.setStatus(400);
+		}
+	}
+
+	@RequestMapping(value = "/public/decrypt", method = RequestMethod.POST)
+	public void decryptUpload(@RequestParam("file") List<MultipartFile> files,
+			@RequestParam String password,
+			HttpServletResponse response) {
+		if (!files.isEmpty()) {
+			response.setStatus(200);
+			try {
+				MultipartFile uploadedFile = files.get(0);
+				final File temp = File.createTempFile("hrmupload-", ".xlsx");
+				uploadedFile.transferTo(temp);
+				Workbook wb = WorkbookFactory.create(temp, password);
 
 				final File exportFile = File.createTempFile("hrmupload-",
 						".xlsx");
