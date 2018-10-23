@@ -749,7 +749,10 @@ public class HomeController {
 						response);
 
 			} catch (Exception e) {
-				System.out.println(e.getMessage());
+				try {
+					response.sendError(500, e.getMessage());
+				} catch (IOException e1) {
+				}
 			}
 
 		} else {
